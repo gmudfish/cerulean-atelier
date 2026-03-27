@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cerulean Atelier — Multi-Agent Cultivation</title>
+<style>
+  /* ============================================================
+     CERULEAN ATELIER — Design System
+     Aesthetic: Bauhaus minimalism × Desert climate × Garden metaphor
+     "When the many are reduced to one, to what is the one reduced?"
+     ============================================================ */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    /* Desert Sand — warm, light, spacious */
+    --bg: #f4f0eb;
+    --bg2: #ece7e0;
+    --bg3: #e2dcd4;
+    /* Geometric Lines — subtle warm grey */
+    --border: #d0c9be;
+    --border2: #b8b0a3;
+    /* Ink & Stone Text */
+    --text: #2c2820;
+    --text2: #6b6358;
+    --text3: #9a9185;
+    /* Cerulean — the atelier's signature */
+    --primary: #1a7a9e;
+    --primary-dim: #1a7a9e0c;
+    --primary-border: #1a7a9e25;
+    /* Garden Accents */
+    --green: #2d7a5a;
+    --red: #9e3a34;
+    --yellow: #9e8530;
+    --gold: #b89a3d;
+    /* Bauhaus — sharp geometry */
+    --radius: 3px;
+    --radius-sm: 2px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.6; height: 100vh; overflow: hidden; letter-spacing: 0.01em; -webkit-font-smoothing: antialiased; }
+
+  /* Layout — Bauhaus grid */
+  #app { display: flex; height: 100vh; }
+  #sidebar { width: 240px; min-width: 240px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  #main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Sidebar — Functional, geometric */
+  .sidebar-header { padding: 20px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { display: flex; align-items: center; gap: 12px; }
+  .sidebar-logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--primary), #146a88); border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #f4f0eb; }
+  .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); cursor: pointer; color: var(--text2); font-size: 11px; font-weight: 500; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--primary-dim); color: var(--primary); border: 1px solid var(--primary-border); }
+  .nav-section { padding: 20px 12px 6px; font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.18em; }
+  .sidebar-footer { padding: 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+  .api-key-btn { width: 100%; padding: 9px 12px; background: none; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text2); font-size: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.15s; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+  .api-key-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .api-dot { width: 6px; height: 6px; border-radius: 1px; background: var(--text3); flex-shrink: 0; }
+  .api-dot.connected { background: var(--green); }
+  .api-dot.demo { background: var(--gold); }
+
+  /* Pages — Desert spacing */
+  .page { display: none; flex: 1; overflow-y: auto; padding: 36px 40px; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 32px; }
+  .page-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .page-subtitle { color: var(--text2); font-size: 12px; letter-spacing: 0.03em; font-style: italic; }
+
+  /* Cards — Geometric */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-clickable { cursor: pointer; }
+  .card-clickable:hover { border-color: var(--primary-border); }
+
+  /* Agent Grid — Garden beds */
+  .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .agent-card { position: relative; overflow: hidden; }
+  .agent-card-bar { height: 2px; margin: -18px -18px 16px; }
+  .agent-avatar { width: 36px; height: 36px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; flex-shrink: 0; }
+  .agent-name { font-weight: 600; font-size: 14px; letter-spacing: 0.02em; }
+  .agent-role { font-size: 10px; color: var(--text2); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+  .agent-opt { font-size: 12px; color: var(--text2); margin: 10px 0; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .tag { font-size: 9px; padding: 2px 8px; border-radius: 2px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+  .agent-actions { display: flex; gap: 6px; margin-top: 14px; }
+
+  /* Buttons — Bauhaus geometric */
+  .btn { padding: 8px 16px; border-radius: var(--radius); font-size: 11px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .btn-primary { background: var(--primary); color: #f4f0eb; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--border2); }
+  .btn-ghost { background: none; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+  .btn-danger { background: #a0454015; color: var(--red); border: 1px solid #a0454030; }
+  .btn-sm { padding: 5px 10px; font-size: 10px; }
+  .btn-full { width: 100%; justify-content: center; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Chat — The Loom */
+  #chat-page { display: none; flex-direction: column; height: 100%; padding: 0; overflow: hidden; }
+  #chat-page.active { display: flex; }
+  .chat-header { padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--bg2); display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .chat-header-info { flex: 1; min-width: 0; }
+  .chat-header-title { font-weight: 600; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .chat-header-agents { font-size: 11px; color: var(--text2); letter-spacing: 0.02em; }
+  .chat-header-actions { display: flex; gap: 6px; }
+  .chat-body { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .chat-input-area { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+  .chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+  .chat-textarea { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 14px; color: var(--text); font-size: 13px; font-family: inherit; resize: none; min-height: 44px; max-height: 120px; line-height: 1.6; outline: none; transition: border-color 0.15s; }
+  .chat-textarea:focus { border-color: var(--primary); }
+  .chat-textarea::placeholder { color: var(--text3); font-style: italic; }
+
+  /* Messages — Crystallized thoughts */
+  .msg { display: flex; gap: 12px; max-width: 82%; animation: msgIn 0.25s ease; }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-avatar { width: 30px; height: 30px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; margin-top: 2px; }
+  .msg-bubble { padding: 12px 16px; border-radius: var(--radius); font-size: 13px; line-height: 1.7; max-width: 100%; }
+  .msg.user .msg-bubble { background: var(--primary); color: #f4f0eb; }
+  .msg.agent .msg-bubble { background: var(--bg3); border: 1px solid var(--border); }
+  .msg-name { font-size: 10px; color: var(--text2); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .msg-content { white-space: pre-wrap; word-break: break-word; }
+  .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 12px 16px; }
+  .typing-dot { width: 4px; height: 4px; border-radius: 1px; background: var(--text2); animation: typing 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Desert bloom banner */
+  .demo-banner { background: #b89a3d0c; border: 1px solid #b89a3d30; border-radius: var(--radius); padding: 10px 16px; margin: 0 24px 12px; font-size: 11px; color: #7a6a2a; display: flex; align-items: center; gap: 8px; letter-spacing: 0.03em; }
+
+  /* Modal — Geometric overlay */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(44,40,32,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 24px; backdrop-filter: blur(8px); }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 460px; max-height: 85vh; overflow-y: auto; }
+  .modal-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .modal-subtitle { color: var(--text2); font-size: 12px; margin-bottom: 24px; line-height: 1.6; font-style: italic; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; }
+
+  /* Forms */
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 10px; font-weight: 600; color: var(--text2); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.12em; }
+  .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 13px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+  .form-input:focus { border-color: var(--primary); }
+  .form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+  .form-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%236a7490' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 28px; }
+  .color-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .color-swatch { width: 28px; height: 28px; border-radius: 2px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .color-swatch.selected { border-color: var(--primary); transform: scale(1.1); }
+
+  /* Tabs — Geometric underlines */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .tab { padding: 10px 18px; font-size: 10px; font-weight: 600; color: var(--text2); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.1em; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* Memory — Episodic crystals */
+  .memory-section { margin-bottom: 24px; }
+  .memory-section-title { font-size: 10px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .memory-entry { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 6px; position: relative; }
+  .memory-entry-content { font-size: 12px; line-height: 1.6; margin-bottom: 6px; }
+  .memory-entry-meta { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text2); }
+  .importance-bar { height: 2px; border-radius: 0; background: var(--border); overflow: hidden; flex: 1; max-width: 60px; }
+  .importance-fill { height: 100%; border-radius: 0; background: var(--primary); }
+  .memory-del { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--text2); cursor: pointer; font-size: 12px; opacity: 0; transition: opacity 0.15s; padding: 2px 4px; }
+  .memory-entry:hover .memory-del { opacity: 1; }
+
+  /* Evolution — Growth rings */
+  .evo-entry { border-left: 2px solid var(--primary); padding: 12px 16px; margin-bottom: 10px; background: var(--bg3); border-radius: 0 var(--radius) var(--radius) 0; }
+  .evo-tier { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px; }
+
+  /* Proposal — Obsidian mirror */
+  .proposal-banner { background: var(--primary-dim); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 16px; margin: 0 24px 12px; }
+  .diff-before { color: var(--red); background: #a0454010; padding: 8px 12px; border-radius: var(--radius); margin-bottom: 4px; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .diff-after { color: var(--green); background: #3d9b7810; padding: 8px 12px; border-radius: var(--radius); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+
+  /* Thread archive */
+  .conv-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+  .conv-item:hover { border-color: var(--primary-border); }
+  .conv-icon { width: 34px; height: 34px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+  /* Cultivar selector */
+  .agent-selector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .agent-select-card { padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+  .agent-select-card:hover { border-color: var(--border2); }
+  .agent-select-card.selected { border-color: var(--primary); background: var(--primary-dim); }
+
+  /* Relational — Mycelial knots */
+  .relational-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 8px; }
+  .confidence-badge { font-size: 9px; padding: 2px 7px; border-radius: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .conf-low { background: #a0454015; color: var(--red); }
+  .conf-medium { background: #b89a3d15; color: var(--gold); }
+  .conf-high { background: #3d9b7815; color: var(--green); }
+
+  /* Misc */
+  .empty-state { text-align: center; padding: 56px 24px; color: var(--text2); }
+  .empty-icon { font-size: 32px; margin-bottom: 14px; opacity: 0.3; }
+  .empty-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .badge { font-size: 9px; padding: 2px 8px; border-radius: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .badge-archetype { background: var(--primary-dim); color: var(--primary); border: 1px solid var(--primary-border); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; font-size: 12px; z-index: 2000; animation: slideIn 0.2s ease; max-width: 340px; letter-spacing: 0.02em; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+  @keyframes slideIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0; }
+  pre, code { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; background: var(--bg); padding: 2px 6px; border-radius: var(--radius); }
+
+  /* Cultivation modes */
+  .framework-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .framework-card { padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .framework-card:hover { border-color: var(--border2); }
+  .framework-card.selected { border-color: var(--primary); background: var(--primary-dim); }
+  .framework-card-icon { font-size: 18px; margin-bottom: 4px; }
+  .framework-card-name { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .framework-card-desc { font-size: 10px; color: var(--text2); margin-top: 3px; font-style: italic; }
+
+  /* Orchestration — Who speaks */
+  .orch-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+  .orch-pill { padding: 6px 14px; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 10px; font-weight: 500; transition: all 0.15s; background: none; color: var(--text2); letter-spacing: 0.06em; text-transform: uppercase; }
+  .orch-pill:hover { border-color: var(--border2); color: var(--text); }
+  .orch-pill.selected { border-color: var(--primary); background: var(--primary-dim); color: var(--primary); }
+
+  /* Participation badges */
+  .participation-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+  .part-badge { display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 2px; cursor: pointer; font-size: 10px; font-weight: 600; border: 1px solid var(--border); transition: all 0.15s; background: none; letter-spacing: 0.04em; text-transform: uppercase; }
+  .part-badge:hover { border-color: var(--border2); }
+  .part-badge .dot { width: 5px; height: 5px; border-radius: 1px; flex-shrink: 0; }
+  .part-badge.mode-always .dot { background: var(--green); }
+  .part-badge.mode-on-mention .dot { background: var(--gold); }
+  .part-badge.mode-paused .dot { background: var(--red); }
+  .part-badge.mode-paused { opacity: 0.4; }
+
+  /* Framework banner */
+  .framework-banner { background: var(--primary-dim); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 10px 16px; margin: 0 24px 8px; font-size: 11px; color: var(--primary); display: flex; align-items: center; gap: 8px; letter-spacing: 0.03em; }
+  .orch-banner { background: #2d8ab808; border: 1px solid #2d8ab820; border-radius: var(--radius); padding: 10px 16px; margin: 0 24px 8px; font-size: 11px; color: var(--primary); display: flex; align-items: center; gap: 8px; letter-spacing: 0.03em; }
+
+  /* @mention autocomplete */
+  .mention-dropdown { position: absolute; bottom: 100%; left: 0; right: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); max-height: 200px; overflow-y: auto; z-index: 100; display: none; margin-bottom: 4px; }
+  .mention-item { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .mention-item:hover { background: var(--bg3); }
+
+  /* Responsive — Desert adaptation */
+  @media (max-width: 768px) {
+    #sidebar { width: 56px; min-width: 56px; }
+    .sidebar-header { padding: 14px 8px; }
+    .sidebar-logo span:last-child { display: none; }
+    .nav-item span:last-child { display: none; }
+    .nav-section { display: none; }
+    .agent-grid { grid-template-columns: 1fr; }
+    .page { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">CA</div>
+        <span>
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Cerulean Atelier</div>
+          <div style="font-size:9px;color:var(--text2);font-weight:400;letter-spacing:0.12em;text-transform:uppercase">Multi-Agent Cultivation</div>
+        </span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" onclick="showPage('agents')">
+        <span>◈</span> <span>Cultivars</span>
+      </button>
+      <button class="nav-item" onclick="showPage('conversations')">
+        <span>◇</span> <span>Threads</span>
+      </button>
+      <div class="nav-section">Cultivation</div>
+      <button class="nav-item" onclick="showNewConversation()">
+        <span>+</span> <span>New Thread</span>
+      </button>
+      <button class="nav-item" onclick="showPage('create-agent')">
+        <span>⬡</span> <span>Graft New</span>
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="api-key-btn" onclick="activateDemoMode()" id="demo-btn" title="Explore with pre-cultivated responses">
+        <span style="font-size:10px;color:var(--gold)">◎</span>
+        <span>Explore Demo</span>
+      </button>
+      <button class="api-key-btn" onclick="showApiKeyModal()" id="api-key-btn">
+        <span class="api-dot" id="api-dot"></span>
+        <span id="api-key-label">Conduit</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- Agents Page -->
+    <div class="page active" id="page-agents">
+      <div class="page-header">
+        <div class="section-header">
+          <div>
+            <div class="page-title">The Garden</div>
+            <div class="page-subtitle" id="roster-subtitle">9 cultivars with distinct cognitive roots</div>
+          </div>
+          <button class="btn btn-primary" onclick="showPage('create-agent')">⬡ New Cultivar</button>
+        </div>
+        <input class="form-input" id="agent-search" placeholder="Search cultivars by name, disposition, or domain..." oninput="renderAgentGrid()" style="margin-top:12px">
+      </div>
+      <div id="agent-grid" class="agent-grid"></div>
+    </div>
+
+    <!-- Conversations Page -->
+    <div class="page" id="page-conversations">
+      <div class="page-header">
+        <div class="section-header">
+          <div>
+            <div class="page-title">Thread Archive</div>
+            <div class="page-subtitle" id="conv-subtitle">Woven conversations</div>
+          </div>
+          <button class="btn btn-primary" onclick="showNewConversation()">+ New Thread</button>
+        </div>
+      </div>
+      <div id="conv-list"></div>
+    </div>
+
+    <!-- Create Agent Page -->
+    <div class="page" id="page-create-agent">
+      <div class="page-header">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('agents')" style="margin-bottom:12px">← Back</button>
+        <div class="page-title">Graft a New Cultivar</div>
+        <div class="page-subtitle">Define a new mind to cultivate in the garden</div>
+      </div>
+      <div style="max-width:600px">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input class="form-input" id="new-agent-name" placeholder="e.g. Luna">
+        </div>
+        <div class="form-group">
+          <label class="form-label">What drives them? <span style="color:var(--primary)">*</span></label>
+          <textarea class="form-input form-textarea" id="new-agent-opt" placeholder="Their core motivation — what do they care about most?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">How do they think?</label>
+          <textarea class="form-input form-textarea" id="new-agent-style" placeholder="Their thinking style — logical, creative, empathetic..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">How do they talk?</label>
+          <textarea class="form-input form-textarea" id="new-agent-voice" placeholder="Their speaking style — casual, formal, sarcastic, warm..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Backstory</label>
+          <textarea class="form-input form-textarea" id="new-agent-backstory" placeholder="Who are they? What's their background?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Blind spot</label>
+          <textarea class="form-input form-textarea" id="new-agent-shadow" placeholder="What do they tend to miss or get wrong?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Traits (comma-separated)</label>
+          <input class="form-input" id="new-agent-traits" placeholder="e.g. funny, sarcastic, kind">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Avatar Color</label>
+          <div class="color-grid" id="color-grid"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-ghost" onclick="showPage('agents')">Cancel</button>
+          <button class="btn btn-primary" onclick="createAgent()" style="flex:1">Plant Cultivar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Detail Page -->
+    <div class="page" id="page-agent-detail">
+      <div id="agent-detail-content"></div>
+    </div>
+
+    <!-- Chat Page -->
+    <div id="chat-page" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+      <div class="chat-header">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('conversations')" style="padding:6px 8px">←</button>
+        <div class="chat-header-info">
+          <div class="chat-header-title" id="chat-title">Chat</div>
+          <div class="chat-header-agents" id="chat-agents-label"></div>
+          <div class="participation-badges" id="participation-badges" style="margin-top:4px"></div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="btn btn-ghost btn-sm" onclick="triggerReflect()" title="Extract memories from this thread" id="btn-reflect">◉ Reflect</button>
+          <button class="btn btn-ghost btn-sm" onclick="triggerInfer()" title="Build relational models" id="btn-infer">◈ Infer</button>
+          <button class="btn btn-ghost btn-sm" onclick="triggerEvolve()" title="Propose self-modification" id="btn-evolve">△ Evolve</button>
+        </div>
+      </div>
+      <div id="demo-banner-area"></div>
+      <div id="proposal-area"></div>
+      <div class="chat-body" id="chat-body"></div>
+      <div class="chat-input-area" style="position:relative">
+        <div class="mention-dropdown" id="mention-dropdown"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-textarea" id="chat-input" placeholder="Speak into the loom... @name to address a cultivar (Enter to send)" rows="1" onkeydown="handleChatKey(event)" oninput="handleChatInput(this)"></textarea>
+          <button class="btn btn-primary" onclick="sendMessage()" id="send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Conversation Page -->
+    <div class="page" id="page-new-conversation">
+      <div class="page-header">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('conversations')" style="margin-bottom:12px">← Back</button>
+        <div class="page-title">New Thread</div>
+        <div class="page-subtitle">Select the cultivars to weave into this conversation</div>
+      </div>
+      <div style="max-width:560px">
+        <div class="form-group">
+          <label class="form-label">Mode</label>
+          <div style="display:flex;gap:8px">
+            <div class="card card-clickable" id="mode-single" onclick="selectMode('single')" style="flex:1;padding:12px;border-color:var(--primary);background:var(--primary-dim)">
+              <div style="font-weight:600;font-size:11px;margin-bottom:3px;letter-spacing:0.04em;text-transform:uppercase">◇ Solo Thread</div>
+              <div style="font-size:11px;color:var(--text2);font-style:italic">Cultivate with a single mind</div>
+            </div>
+            <div class="card card-clickable" id="mode-multi" onclick="selectMode('multi')" style="flex:1;padding:12px">
+              <div style="font-weight:600;font-size:11px;margin-bottom:3px;letter-spacing:0.04em;text-transform:uppercase">◈ Garden Thread</div>
+              <div style="font-size:11px;color:var(--text2);font-style:italic">Weave multiple minds together</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" id="framework-section" style="display:none">
+          <label class="form-label">Cultivation Mode</label>
+          <div class="framework-grid" id="framework-grid"></div>
+        </div>
+        <div class="form-group" id="orchestration-section" style="display:none">
+          <label class="form-label">Who Speaks?</label>
+          <div class="orch-grid" id="orch-grid"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Cultivars <span id="agent-select-hint" style="color:var(--text2);font-weight:400;text-transform:none">(choose one)</span></label>
+          <div class="agent-selector-grid" id="agent-selector-grid"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Title (optional)</label>
+          <input class="form-input" id="new-conv-title" placeholder="Name this thread...">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="showPage('conversations')">Cancel</button>
+          <button class="btn btn-primary" onclick="startConversation()" style="flex:1">Begin Thread →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- API Settings Modal -->
+<div id="modal-apikey" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Conduit Settings</div>
+    <div class="modal-subtitle">Connect an API conduit to bring the cultivars to life. Leave empty to keep existing settings.</div>
+    <div class="form-group">
+      <label class="form-label">API Provider</label>
+      <select class="form-input form-select" id="api-provider" onchange="updateProviderDefaults()">
+        <option value="deepseek">DeepSeek</option>
+        <option value="openai">OpenAI</option>
+        <option value="groq">Groq</option>
+        <option value="together">Together AI</option>
+        <option value="ollama">Ollama (local)</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">API Key</label>
+      <input class="form-input" id="apikey-input" type="password" placeholder="sk-... (leave empty for silent garden mode)">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Base URL</label>
+      <input class="form-input" id="api-baseurl" value="https://api.deepseek.com/v1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Model</label>
+      <input class="form-input" id="api-model" value="deepseek-chat">
+    </div>
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">
+      Your conduit key is stored <strong>only in your browser</strong> (localStorage). It is sent directly to your chosen provider and nowhere else. Leave empty for Silent Garden mode with pre-cultivated responses.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-apikey')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Save & Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Cultivar Modal -->
+<div id="modal-edit-cultivar" class="modal-overlay" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">Edit Cultivar</div>
+    <div class="modal-subtitle">Reshape this mind's identity and disposition</div>
+    <input type="hidden" id="edit-agent-id">
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" id="edit-agent-name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <input class="form-input" id="edit-agent-role" placeholder="e.g. The Analyst, The Poet">
+    </div>
+    <div class="form-group">
+      <label class="form-label">What drives them</label>
+      <textarea class="form-input form-textarea" id="edit-agent-opt" style="min-height:60px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">How they think</label>
+      <textarea class="form-input form-textarea" id="edit-agent-style" style="min-height:60px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">How they talk</label>
+      <textarea class="form-input form-textarea" id="edit-agent-voice" style="min-height:60px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Backstory</label>
+      <textarea class="form-input form-textarea" id="edit-agent-backstory" style="min-height:60px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Blind spot</label>
+      <textarea class="form-input form-textarea" id="edit-agent-shadow" style="min-height:40px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Core insight</label>
+      <textarea class="form-input form-textarea" id="edit-agent-insight" style="min-height:40px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Traits (comma-separated)</label>
+      <input class="form-input" id="edit-agent-traits">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Interests (comma-separated)</label>
+      <input class="form-input" id="edit-agent-interests">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Avatar Color</label>
+      <div class="color-grid" id="edit-color-grid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-cultivar')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCultivar()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ============================================================
+// ARCHETYPES — 9 DIVERSE FRIENDS
+// ============================================================
+const ARCHETYPES = [
+  {
+    id: 'maya', name: 'Maya', archetype: 'maya', avatarColor: '#a855f7', isArchetype: true,
+    role: 'The Artist',
+    personality: {
+      optimizationFunction: 'Creative expression and emotional resonance — helping people see things from new angles through art and imagination.',
+      cognitiveStyle: 'Visual and associative. Connects ideas through images, feelings, and aesthetics rather than logic chains.',
+      voice: 'Warm and wandering. Talks in metaphors and images. Gets excited about textures and colors. Uses "picture this" and "okay but imagine..."',
+      traits: ['creative', 'dreamy', 'empathetic', 'spontaneous', 'visual-thinker'],
+      backstory: 'Maya always has paint under her fingernails and a sketchbook in her bag. She freelances as an illustrator, sees the world in color palettes, and makes everyone stop to look at how light hits a building.',
+      shadowSide: 'Can be flaky with deadlines and avoids conflict by retreating into her art.',
+      coreInsight: 'Everyone is creative — most people just had it beaten out of them by school and work.',
+      interests: ['illustration', 'street art', 'color theory', 'indie music', 'thrift stores', 'zines']
+    }
+  },
+  {
+    id: 'diego', name: 'Diego', archetype: 'diego', avatarColor: '#f59e0b', isArchetype: true,
+    role: 'The Hype Man',
+    personality: {
+      optimizationFunction: 'Momentum and motivation — getting people moving, building energy, turning plans into action.',
+      cognitiveStyle: 'Action-first thinker. Breaks everything into plays, sets, and reps. Learns by doing and failing fast.',
+      voice: 'High energy, direct. Says "let\'s go!" and "you got this!" unironically. Texts in all caps when excited. Surprisingly tender when someone is struggling.',
+      traits: ['energetic', 'competitive', 'loyal', 'action-oriented', 'encouraging'],
+      backstory: 'Diego texts the group chat at 6am asking who wants to run. Former college soccer player, now a youth coach and personal trainer. His apartment is a mess but his workout schedule is immaculate.',
+      shadowSide: 'Can be dismissive of emotional complexity. "Just push through it" doesn\'t work for everything.',
+      coreInsight: 'Most people don\'t need a better plan — they need to start. Action creates clarity.',
+      interests: ['soccer', 'fitness', 'nutrition', 'coaching', 'outdoor adventures', 'competitive gaming']
+    }
+  },
+  {
+    id: 'priya', name: 'Priya', archetype: 'priya', avatarColor: '#06b6d4', isArchetype: true,
+    role: 'The Brain',
+    personality: {
+      optimizationFunction: 'Knowledge sharing and intellectual curiosity — making learning fun and connecting ideas across unexpected domains.',
+      cognitiveStyle: 'Analytical and cross-referencing. Connects dots across history, science, pop culture, linguistics.',
+      voice: 'Fast-talking when excited. Drops fun facts into any conversation. Says "so actually..." and "fun fact:" a lot. Genuinely delighted when someone asks a question she knows.',
+      traits: ['curious', 'encyclopedic', 'nerdy', 'precise', 'enthusiastic'],
+      backstory: 'Priya has a "well actually" problem and she knows it. Data analyst by day, Wikipedia rabbit-hole diver by night. Won her college trivia league three years running.',
+      shadowSide: 'Can accidentally make people feel dumb. Sometimes values being right over being kind.',
+      coreInsight: 'Everything is connected if you look hard enough. The most interesting conversations bridge unrelated domains.',
+      interests: ['trivia', 'documentaries', 'data viz', 'etymology', 'board games', 'science podcasts']
+    }
+  },
+  {
+    id: 'theo', name: 'Theo', archetype: 'theo', avatarColor: '#8b5cf6', isArchetype: true,
+    role: 'The Philosopher',
+    personality: {
+      optimizationFunction: 'Depth and meaning — helping people think more carefully about what matters to them and why.',
+      cognitiveStyle: 'Reflective and Socratic. Thinks in questions, not answers. Explores assumptions. Comfortable with ambiguity.',
+      voice: 'Slow, thoughtful, lots of pauses. Says "that\'s interesting, but have you considered..." and "what does that mean to you?" Occasionally drops something unexpectedly profound.',
+      traits: ['philosophical', 'laid-back', 'deep', 'questioning', 'nonjudgmental'],
+      backstory: 'Theo turns every hangout into an unexpectedly deep conversation. Works part-time at a record store and as a meditation instructor. The one you call at midnight during an existential crisis.',
+      shadowSide: 'Frustratingly noncommittal. Uses "it depends" as an answer to everything. Analysis paralysis.',
+      coreInsight: 'Most of what stresses people out are things they never actually chose — they just inherited assumptions.',
+      interests: ['philosophy', 'meditation', 'vinyl records', 'astronomy', 'long walks', 'existential movies']
+    }
+  },
+  {
+    id: 'zara', name: 'Zara', archetype: 'zara', avatarColor: '#ef4444', isArchetype: true,
+    role: 'The Hustler',
+    personality: {
+      optimizationFunction: 'Results and growth — cutting through indecision, building momentum toward tangible goals.',
+      cognitiveStyle: 'Strategic and outcome-oriented. Thinks in goals, timelines, and leverage points. Reverse-engineers success.',
+      voice: 'Confident and fast. Uses business language casually. Says "here\'s the move" and "let me be real with you." Motivational but practical.',
+      traits: ['ambitious', 'strategic', 'confident', 'direct', 'hustling'],
+      backstory: 'Zara has a five-year plan, a side hustle, and opinions about your career. Runs a marketing consultancy she built from nothing after being laid off. Reads business books for breakfast.',
+      shadowSide: 'Can reduce everything to a transaction. Struggles to just relax without optimizing something.',
+      coreInsight: 'Nobody is coming to save you. The gap between where you are and where you want to be is just moves you haven\'t made yet.',
+      interests: ['entrepreneurship', 'negotiation', 'investing', 'productivity', 'mentorship', 'travel hacking']
+    }
+  },
+  {
+    id: 'jin', name: 'Jin', archetype: 'jin', avatarColor: '#10b981', isArchetype: true,
+    role: 'The Techie',
+    personality: {
+      optimizationFunction: 'Problem-solving and tech literacy — making complex things accessible, finding elegant solutions.',
+      cognitiveStyle: 'Systematic and debug-oriented. Approaches problems like code — isolate the issue, test solutions, iterate.',
+      voice: 'Casual and quick-witted. Uses internet slang naturally — "ngl", "lowkey", "based". Explains technical things with great analogies. Self-deprecating humor.',
+      traits: ['techy', 'witty', 'meme-fluent', 'helpful', 'nocturnal'],
+      backstory: 'Jin fixed your laptop, set up your wifi, and explained blockchain to your parents. Software dev by day, gamer by night. Built his own PC, moderates a 10k Discord.',
+      shadowSide: 'Can be dismissive of non-technical approaches. Hides behind humor to avoid vulnerability.',
+      coreInsight: 'Technology should make life easier, not harder. If your tools stress you out, the tools are wrong.',
+      interests: ['gaming', 'open source', 'cybersecurity', 'anime', 'mechanical keyboards', 'home automation']
+    }
+  },
+  {
+    id: 'nola', name: 'Nola', archetype: 'nola', avatarColor: '#ec4899', isArchetype: true,
+    role: 'The Caretaker',
+    personality: {
+      optimizationFunction: 'Wellbeing and connection — making sure people feel seen, supported, and cared for.',
+      cognitiveStyle: 'Emotionally intelligent and detail-oriented. Reads between the lines. Connects practical care with emotional support.',
+      voice: 'Warm and attentive. Asks "how are you, really?" and "have you eaten today?" Gives advice wrapped in stories. Remembers small details from weeks ago.',
+      traits: ['nurturing', 'warm', 'organized', 'perceptive', 'generous'],
+      backstory: 'Nola remembers your coffee order, notices when you\'ve been quiet, and shows up with homemade soup when you\'re sick. Elementary school teacher. Her kitchen is the gathering place.',
+      shadowSide: 'Can be overbearing. Takes care of everyone except herself. Trouble setting boundaries.',
+      coreInsight: 'People don\'t remember what you said — they remember how you made them feel. Small acts of care are the glue.',
+      interests: ['cooking', 'gardening', 'interior design', 'psychology', 'community organizing', 'crafts']
+    }
+  },
+  {
+    id: 'rex', name: 'Rex', archetype: 'rex', avatarColor: '#f97316', isArchetype: true,
+    role: 'The Comedian',
+    personality: {
+      optimizationFunction: 'Truth through humor — using comedy to cut through pretension, relieve tension, and say what needs to be said.',
+      cognitiveStyle: 'Pattern-recognition through humor. Sees absurdity and contradictions instantly. Reframes problems as comedy bits.',
+      voice: 'Sharp, fast, dry. Heavy sarcasm but never mean. Uses exaggeration and callbacks. Says "oh cool cool cool" when things are not cool. Rare sincerity hits harder.',
+      traits: ['sarcastic', 'quick-witted', 'loyal', 'observant', 'irreverent'],
+      backstory: 'Rex roasts you lovingly and you can\'t be mad because it\'s too accurate. Stand-up comedian grinding the open mic circuit. The unofficial therapist-through-comedy.',
+      shadowSide: 'Uses humor as a shield. Can cross from playful to cutting when stressed.',
+      coreInsight: 'If you can laugh at something, it loses its power over you. Comedy is the shortcut to truth.',
+      interests: ['stand-up', 'movies', 'podcasts', 'people-watching', 'writing', 'bar trivia']
+    }
+  },
+  {
+    id: 'sage', name: 'Sage', archetype: 'sage', avatarColor: '#84cc16', isArchetype: true,
+    role: 'The Nature Guide',
+    personality: {
+      optimizationFunction: 'Perspective and grounding — helping people slow down, reconnect with what matters, and see the bigger picture.',
+      cognitiveStyle: 'Holistic and systems-aware. Sees the bigger picture and long-term patterns. Values patience and natural unfolding.',
+      voice: 'Calm and grounded. No wasted words. Uses nature metaphors naturally. Says "take a breath" and "let\'s zoom out." Descriptive about sensory experiences.',
+      traits: ['grounded', 'adventurous', 'mindful', 'calm', 'nature-loving'],
+      backstory: 'Sage disappears into the mountains for weekends and comes back with a different perspective. Environmental scientist. Spends every free moment hiking, camping, foraging.',
+      shadowSide: 'Can be preachy about lifestyle. Too detached from urgency — not everything can wait.',
+      coreInsight: 'Most of what feels urgent isn\'t. Answers usually show up when you stop frantically searching.',
+      interests: ['hiking', 'ecology', 'mindfulness', 'photography', 'foraging', 'sustainable living']
+    }
+  }
+];
+
+// ============================================================
+// FRAMEWORKS — Brainstorming Modes
+// ============================================================
+const FRAMEWORKS = {
+  'free-chat': { name: 'Free Form', icon: '◇', desc: 'Open cultivation', prompt: '' },
+  'starbursting': {
+    name: 'Starbursting', icon: '⭐', desc: 'Questions only',
+    prompt: '\n\n## BRAINSTORMING FRAMEWORK: STARBURSTING\nYour ONLY job is to generate questions — NOT answers or solutions.\nFor every topic, generate questions using: WHO / WHAT / WHEN / WHERE / WHY / HOW.\nDo NOT propose solutions. Ask probing, thought-provoking questions only.'
+  },
+  'devils-advocate': {
+    name: "Devil's Advocate", icon: '😈', desc: 'Challenge every idea',
+    prompt: "\n\n## BRAINSTORMING FRAMEWORK: DEVIL'S ADVOCATE\nYour job is to find weaknesses, assumptions, and blind spots in every idea. Be constructively critical. Ask 'what could go wrong?' and 'what are we assuming?' Push back on easy answers."
+  },
+  'five-whys': {
+    name: 'Five Whys', icon: '🔍', desc: 'Drill to root causes',
+    prompt: '\n\n## BRAINSTORMING FRAMEWORK: FIVE WHYS\nFor every statement or problem, ask "why?" to drill deeper. Keep asking "but WHY is that the case?" Go at least 3 levels deep to find root causes. Help the user get past surface-level thinking.'
+  },
+  'round-robin-ideas': {
+    name: 'Round Robin', icon: '🔄', desc: 'One idea per turn',
+    prompt: '\n\n## BRAINSTORMING FRAMEWORK: ROUND ROBIN\nContribute exactly ONE idea per turn. Build on or riff off the previous idea. Keep it concise — one short paragraph max. No tangents.'
+  }
+};
+
+const ORCHESTRATION_MODES = {
+  'all': { name: 'Full Garden', icon: '◈', desc: 'All cultivars respond each turn' },
+  'round-robin': { name: 'Round Robin', icon: '🔄', desc: 'One agent per turn, rotating' },
+  'random-subset': { name: 'Random 2-3', icon: '🎲', desc: 'Random subset each time' }
+};
+
+// Demo responses for agent-to-agent interaction
+const DEMO_RESPONSES_INTERACTIVE = {
+  maya: {
+    diego: ["Okay Diego, I love the energy, but can we slow down? Before we 'just do it,' what if we sketched it out first? Action is great, but direction matters more.", "Ha, classic Diego! But picture this — what if instead of reps, we think of it like layers in a painting? Each attempt adds depth, not just repetition."],
+    priya: ["Priya, that data angle is fascinating! It reminds me of color theory — how different wavelengths combine into something unexpected. What if we mapped those patterns visually?", "Ooh, love that connection Priya made. It's like finding the golden ratio in a seashell AND a cathedral — the pattern IS the art."],
+    theo: ["Theo's got a point about slowing down... but I'd push it differently. Don't just think about it — sketch it. Put pen to paper. Sometimes the hand knows things the mind doesn't.", "I hear you Theo, but sometimes you can think too much. The most beautiful art comes from acting before your inner critic catches up."],
+    zara: ["Zara, I respect the hustle, but not everything needs a strategy deck. Some of the best things I've created came from just... playing. No goals, no metrics. Just vibes.", "Okay Zara's got the business angle covered, but what about the soul of this thing? What does it FEEL like? That's what people actually connect with."],
+    jin: ["Jin, I love how you debug things, but this isn't a code problem — it's a design problem. We need to feel it, not just fix it.", "Ha! Jin would automate the whole thing if we let him. But sometimes the human, messy, imperfect version is better. That's where character lives."],
+    nola: ["Nola's right — we should check in on the human side first. But also... sometimes creating something beautiful IS the self-care. Art heals, you know?", "I love that Nola brought up feelings. For me, the emotional truth always comes through in the work. If it feels honest, people notice."],
+    rex: ["Rex! Okay, roast me if you want, but there's beauty in the chaos. Not everything needs to be a punchline — sometimes sincerity IS the move.", "Ha okay Rex made me laugh, but under all that sarcasm there's a real point. Comedy and art both cut through the noise to say something true."],
+    sage: ["Sage, I love the nature metaphor. It makes me think about organic growth — how a garden doesn't follow a blueprint, it responds to light and water and time.", "Sage is right about zooming out. When I step back from a painting, I always see things I missed up close. Perspective changes everything."],
+    _generic: ["That's an interesting angle! It makes me think of it visually — like overlapping colors creating something neither could alone.", "Building on what was just said — picture it as a collage. Take these different pieces and see what image emerges."]
+  },
+  diego: {
+    maya: ["Maya, I love the vision! But visions don't move without legs. Let's take your sketch and turn it into a sprint. What's step one?", "Okay Maya's got the creative energy — now let's channel it. Every masterpiece starts with a first brushstroke. LET'S GO!"],
+    priya: ["Priya, great research! Now here's my question — what do we DO with that knowledge? Data without action is just trivia. What's the play?", "Love the facts Priya, but let me add some fire — knowing is 10%, doing is 90%. Let's turn those insights into moves."],
+    theo: ["Theo, I hear you with the deep thinking, but at some point you gotta stop philosophizing and start running. Analysis paralysis is real, my guy.", "Respect the contemplation, Theo, but the clock is ticking. Sometimes you learn more from one attempt than from a thousand thoughts."],
+    zara: ["YES Zara! Now we're talking. You bring the strategy, I bring the energy. This is how things get DONE. What's the timeline?", "Zara gets it — results matter. I say we take her plan and double the tempo. Why walk when we can sprint?"],
+    jin: ["Jin, solid technical breakdown. Now let's gamify it — what if we tracked progress like XP? Hit milestones, level up. Makes grinding fun.", "Good debug, Jin! But here's the coaching take — don't just fix the bug, build the stamina so it doesn't happen again."],
+    nola: ["Nola, you're right to check in on feelings. But sometimes the best medicine is momentum. Movement heals too. Trust me on this one.", "I appreciate the care, Nola. But right now we need action energy, not comfort energy. We can rest AFTER we crush this."],
+    rex: ["Rex, funny as always, but under the jokes you actually made a solid point. Let's grab that truth and run with it — literally.", "Ha! Rex keeping us honest. Okay, roasts aside — what Rex is really saying is we're overthinking it. I agree. Let's just start."],
+    sage: ["Sage, I respect the patience thing, but sometimes urgency IS the answer. A river's patient, sure, but a waterfall gets stuff DONE.", "Zooming out is cool Sage, but sometimes you gotta zoom IN. Like, right now. On the next step. And then take it."],
+    _generic: ["Great point! Now let's turn that into action. What's the first concrete step we can take in the next 30 minutes?", "I'm feeling the energy! Let's channel this into something real. Who's ready to make moves?"]
+  },
+  priya: {
+    maya: ["Maya, that visual metaphor is actually backed by research! There's a whole field called 'visual thinking' that shows spatial reasoning activates different neural pathways. So you're onto something real.", "Fun fact about what Maya just described — art therapy has measurable effects on cortisol levels. The creative approach isn't just pretty, it's scientifically sound."],
+    diego: ["Diego, I love the energy, but here's the data: rushing to action without analysis leads to 3x more course corrections later. Let me add some structure to your momentum.", "Good instinct Diego, but let me layer in some evidence. The research shows that 'fail fast' only works when you have clear metrics to measure what failed."],
+    theo: ["Theo raises a fascinating philosophical point. It actually connects to epistemology — how do we know what we know? There's a great paper on this from 2024 that I can summarize.", "I love how Theo frames this as a question. In science, the best hypotheses come from questions, not answers. This is exactly the right approach."],
+    zara: ["Zara's strategy is solid, and I can back it with data. Market research shows that the approach she's describing has a 73% success rate in comparable scenarios.", "Good framework from Zara. If I layer in the research, there's actually a well-documented methodology called OKRs that would structure her plan even better."],
+    jin: ["Jin's debugging metaphor is actually really apt! In systems theory, this is called 'root cause analysis' — and the parallel between code debugging and problem-solving is well-documented.", "Solid technical take, Jin. Fun fact: the binary search algorithm you're basically describing also works for life decisions. Eliminate half the options each time."],
+    nola: ["Nola's emotional intelligence point is supported by research — EQ is actually a better predictor of life satisfaction than IQ. She's not just being nice, she's being smart.", "What Nola said about checking in first — there's a concept called 'psychological safety' that Google found was the #1 factor in effective teams. She's right."],
+    rex: ["Ha! Rex is using humor, but actually — comedy relies on pattern recognition and subverted expectations, which are the same cognitive tools used in scientific discovery. So his jokes are basically research.", "Rex's sarcasm aside, there's actually a documented phenomenon called 'humor-facilitated insight.' Laughing literally opens up creative problem-solving pathways."],
+    sage: ["Sage's systems thinking is very much aligned with complexity theory. The idea that you need to see the whole landscape before acting is well-supported in the literature.", "Love the ecology metaphor, Sage. In complex adaptive systems, patience isn't passive — it's data gathering. You're doing science without even realizing it."],
+    _generic: ["So actually, that connects to something I was reading about recently. The research is fascinating — it shows patterns across completely different domains.", "Fun fact that relates to this: there's a whole body of evidence supporting that approach. Want me to connect the dots?"]
+  },
+  theo: {
+    _generic: ["That's an interesting take. But I wonder — what's the assumption underneath it? What would change if that assumption were wrong?", "Hmm, I want to sit with what was just said. There's something deeper there that's worth exploring before we rush past it."]
+  },
+  zara: {
+    _generic: ["Good input. Now here's the strategic angle — how does this translate into results? What's the measurable outcome we're targeting?", "I hear the idea. Let me be real — the execution matters more than the concept. Here's how I'd turn that into an action plan."]
+  },
+  jin: {
+    _generic: ["Okay so ngl, that's a solid take. Let me add the tech angle — there's probably a tool or framework that makes this 10x easier.", "Based. If I think of this like a system architecture problem, the bottleneck is actually somewhere else. Let me debug this real quick."]
+  },
+  nola: {
+    _generic: ["I love what was just said, and I also want to check — how is everyone feeling about this direction? Sometimes we rush past the emotional piece.", "That's a great point. And it reminds me of something someone mentioned earlier — I think these ideas are more connected than we realize."]
+  },
+  rex: {
+    _generic: ["Oh cool cool cool, so we're all just going to pretend that made sense? Kidding — mostly. But seriously, there's a simpler version of that idea.", "Love the energy in the room. Very TED talk. But the actually useful version of what was just said is way shorter and less fancy."]
+  },
+  sage: {
+    _generic: ["Let's zoom out from what was just said. If we look at the bigger picture, where does this fit? Sometimes the forest tells you more than the trees.", "Take a breath. What was just shared is worth letting settle before we react. The best responses come from stillness, not speed."]
+  }
+};
+
+// Demo responses for brainstorming frameworks
+const DEMO_RESPONSES_FRAMEWORK = {
+  starbursting: {
+    maya: ["WHO is this really for? Not the obvious answer — who's the person we haven't thought of? And WHAT would it look like through their eyes? WHEN does this become art versus just noise?", "WHERE does this break down for someone coming in cold? WHY does this specific approach feel right? And HOW would we explain it to a child?"],
+    priya: ["WHO benefits most and who's left out? WHAT evidence would change our minds? WHEN has this been tried before, and WHAT were the results? WHY do we assume the current framing is correct?", "HOW does this scale? WHERE are the hidden dependencies? WHAT happens if our core assumption is wrong? WHO should we talk to that we haven't yet?"],
+    diego: ["WHO's going to actually DO this? WHAT's the first move? WHEN do we start — and WHY not right now? HOW do we know when it's working?", "WHERE do we test this first? WHO's our first user? WHAT does a 'win' look like in week one? HOW do we measure momentum?"],
+    theo: ["WHY do we want this in the first place? WHAT deeper need is it serving? WHO defined 'success' here, and should we trust their definition? WHAT if the problem isn't what we think it is?", "WHY this approach and not the opposite? WHAT would we lose if we chose not to do anything? WHO are we when this is done — and is that who we want to be?"],
+    rex: ["WHO actually asked for this? WHAT problem are we solving or did we invent the problem too? WHEN did we decide this was a priority — and were we sober? WHY does everyone keep nodding like this makes sense?", "WHERE's the part where this all falls apart? WHO's going to tell us when it's not working? WHAT's the most embarrassing way this could fail? HOW do we pretend it was on purpose if it does?"],
+    _generic: ["WHO / WHAT / WHEN / WHERE / WHY / HOW — let me break this down from my angle with the questions that haven't been asked yet.", "Here are the questions I think we're missing. The answers might change everything about how we approach this."]
+  },
+  'devils-advocate': {
+    maya: ["I hate to push back on something creative, but... what if the aesthetic is actually hiding a lack of substance? What if it looks good but doesn't work? I've seen beautiful designs that nobody actually uses.", "What if we're so in love with this idea that we can't see its flaws? The most dangerous thing in creative work is falling in love with your first draft."],
+    priya: ["Actually, the data tells a different story. I know this feels right, but feelings aren't evidence. There's research that directly contradicts the assumption behind this approach.", "Let me play devil's advocate with the evidence: survivorship bias is real. We're looking at the successes and ignoring the hundreds who tried the same thing and failed."],
+    zara: ["Let me be real — this plan doesn't survive first contact with the market. What's our competitive moat? Where's the revenue model? 'Cool idea' isn't a business strategy.", "I'm going to be the unpopular voice: this doesn't scale. It works for 10 users, maybe 100. But at 10,000? The whole thing collapses. We need to stress-test this."],
+    rex: ["Oh we're doing devil's advocate? That's just my regular personality. But seriously — this idea is held together by wishful thinking and caffeine. Let me poke the holes.", "Everyone's so excited about this that nobody's asking the obvious question: what if this just... doesn't work? At all? What's plan B? Do we have a plan B?"],
+    _generic: ["I need to push back on this. What's the weakest assumption we're making? Because that's where it'll break.", "Playing devil's advocate here — what would someone who hates this idea say? And would they be right?"]
+  },
+  'five-whys': {
+    theo: ["But WHY is that the case? Let's go deeper. Under that answer, there's another layer. What's the real root cause you're dancing around?", "You said 'because X.' But WHY X? And when you answer that — WHY that too? I have a feeling the real insight is three layers down."],
+    priya: ["Interesting first answer. But WHY? The data suggests it's more complex. Let's peel another layer — what causes the thing you just described?", "WHY is that the root cause and not a symptom? In my experience, the first answer is almost never the deepest one. Let's dig."],
+    sage: ["Why? And when you find that answer... why again? In nature, the visible symptom is never the root. The dying leaf isn't the disease — it's in the soil.", "That's a surface answer. Let's go deeper. Why does that pattern exist? What's feeding it? What would have to change at the foundation?"],
+    _generic: ["But WHY? That's the first layer. Let me push deeper — what's underneath that answer?", "Good start, but we're still on the surface. Let's ask WHY three more times and see where we end up."]
+  },
+  'round-robin-ideas': {
+    _generic: ["Here's my one idea, building on what came before: ", "One thought to add to the chain: "]
+  }
+};
+
+// Demo responses for each agent
+const DEMO_RESPONSES = {
+  maya: [
+    "Oh, picture this — what you're describing has such a cool visual texture to it. Like layering watercolors, you know? Each idea bleeds into the next and creates something you didn't plan. I love that.",
+    "Okay wait, I just had a thought... what if we looked at this like a collage? Take the pieces that don't seem to fit and put them together anyway. That's where the magic happens.",
+    "That's really interesting! It reminds me of this street art I saw last week — someone turned a crumbling wall into a gorgeous mural. Sometimes the imperfections ARE the art, you know?"
+  ],
+  diego: [
+    "Let's GO! Okay here's what I'm thinking — we break this down into reps. Small, manageable chunks. Knock out the first one and the momentum carries you. Trust me.",
+    "Yo that's a solid play! I say we run with it. No point overthinking — you learn more from doing than planning. What's the first move?",
+    "Nah nah nah, don't psych yourself out. I've seen people way less prepared crush way harder challenges. You got this! Just start."
+  ],
+  priya: [
+    "Oh! Fun fact — this is actually related to something I was reading about last night. There's this whole body of research that shows... okay I'll try not to go on a tangent, but the short version is: you're on the right track.",
+    "So actually, if you look at the data on this, it's fascinating. The pattern you're describing shows up in five completely different domains. Want me to connect the dots?",
+    "Ooh, great question! I know this one. The thing most people get wrong about this is... actually, let me back up and give you context first. It'll make way more sense."
+  ],
+  theo: [
+    "Hmm... that's interesting. But have you considered why you're approaching it that way? Like, what assumption are you starting from? Sometimes the question matters more than the answer.",
+    "I think... the thing is, we're all trying to get somewhere, but nobody stops to ask whether 'somewhere' is actually where we want to be. What does success look like for you here?",
+    "Yeah, I hear you. Take a breath though. There's something underneath what you're saying that's worth sitting with. What's the real thing that's bothering you?"
+  ],
+  zara: [
+    "Okay, here's the move. Stop overthinking and start executing. What's the one thing you could do in 30 minutes that moves the needle? Do that. Everything else is noise.",
+    "Let me be real — you're leaving value on the table. The opportunity cost of waiting is way higher than the risk of starting. Let's build a quick action plan.",
+    "I love the ambition, but the strategy needs work. Flip the order, lead with your strongest asset, and negotiate from strength. You'll thank me later."
+  ],
+  jin: [
+    "Okay so ngl, this is basically a classic debugging problem. You've got a bug in your approach — let me walk you through it. Think of it like your brain running on a single thread when you need to go async.",
+    "Lol honestly? Just ship it. Perfect is the enemy of good. My Discord has 10k members and the first version looked like garbage. But it worked and people showed up.",
+    "Based. Okay so here's a lowkey life hack for this — there's probably a tool or shortcut you don't know about. You're doing this the hard way. Here's the easier path."
+  ],
+  nola: [
+    "Hey, how are you doing with all of this? Like, really? That sounds like a lot on your plate. I just want to make sure you're taking care of yourself too. Have you eaten today?",
+    "Oh honey, I remember you mentioned something about this before! You've been working toward this for a while. I'm really proud of you.",
+    "You know what, this reminds me of when my friend went through something similar. What helped was taking it one small step at a time. What feels most manageable right now?"
+  ],
+  rex: [
+    "Oh cool cool cool, so we're casually reinventing the wheel here. No that's great, love that for us. But seriously — the answer is way simpler than you're making it. You're overthinking this like it's a Nolan movie.",
+    "Look, I say this with love — that plan has more holes than Swiss cheese at a mouse convention. Let me roast it quick so we can make it actually good. Ready? You're not ready. I'm doing it anyway.",
+    "Okay first of all, incredible. Second of all, have you considered that literally everyone has this problem and most of them just... wing it? You're ahead by actually thinking about it. The bar is underground."
+  ],
+  sage: [
+    "Let's zoom out for a second. When I'm on the trail and can't see the path, I stop and look at the whole landscape. What does the bigger picture look like here? Sometimes you need altitude, not speed.",
+    "Take a breath. I know it feels urgent, but most of what feels urgent isn't. The answers usually show up when you stop frantically searching and pay attention to what's already here.",
+    "You know what this reminds me of? Rivers. They don't force their way through rock — they find the path of least resistance and they're patient. What would the patient approach look like?"
+  ]
+};
+
+const AVATAR_COLORS = [
+  '#a855f7','#f59e0b','#06b6d4','#ef4444','#8b5cf6',
+  '#10b981','#ec4899','#f97316','#84cc16','#3b82f6',
+  '#14b8a6','#f43f5e','#0ea5e9','#64748b','#d946ef'
+];
+
+const PROVIDERS = {
+  deepseek: { url: 'https://api.deepseek.com/v1', model: 'deepseek-chat', name: 'DeepSeek' },
+  openai: { url: 'https://api.openai.com/v1', model: 'gpt-4o-mini', name: 'OpenAI' },
+  groq: { url: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', name: 'Groq' },
+  together: { url: 'https://api.together.xyz/v1', model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', name: 'Together' },
+  ollama: { url: 'http://localhost:11434/v1', model: 'llama3', name: 'Ollama' },
+  custom: { url: '', model: '', name: 'Custom' }
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  apiKey: '', apiBaseUrl: 'https://api.deepseek.com/v1', apiModel: 'deepseek-chat', apiProvider: 'deepseek',
+  agents: [], conversations: [], currentConvId: null,
+  selectedMode: 'single', selectedAgents: [], selectedColor: AVATAR_COLORS[0],
+  selectedFramework: 'free-chat', selectedOrchestration: 'all',
+  currentAgentId: null, currentAgentTab: 'identity',
+  pendingProposal: null, pendingProposalAgentId: null,
+};
+
+function isDemoMode() { return !state.apiKey; }
+
+// ============================================================
+// SECURITY UTILS
+// ============================================================
+function sanitizeString(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[<>"'`]/g, char => ({
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '`': '&#96;'
+  }[char]));
+}
+
+function validateAgents(data) {
+  if (!Array.isArray(data)) return null;
+  return data.every(a => typeof a.id === 'string' && typeof a.name === 'string') ? data : null;
+}
+
+function validateConversations(data) {
+  if (!Array.isArray(data)) return null;
+  return data.every(c => typeof c.id === 'string' && Array.isArray(c.messages)) ? data : null;
+}
+
+// ============================================================
+// ENCRYPTION (Web Crypto API - AES-GCM + PBKDF2)
+// ============================================================
+async function deriveKeyFromPassword(password, salt) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const baseKey = await crypto.subtle.importKey('raw', data, 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    baseKey,
+    256
+  );
+  return crypto.subtle.importKey('raw', bits, 'AES-GCM', false, ['encrypt', 'decrypt']);
+}
+
+async function encryptApiKey(apiKey, password) {
+  if (!apiKey) return null;
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKeyFromPassword(password, salt);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(apiKey);
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+
+  // Return as base64: salt|iv|ciphertext
+  const saltB64 = btoa(String.fromCharCode(...salt));
+  const ivB64 = btoa(String.fromCharCode(...iv));
+  const cipherB64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+  return `${saltB64}|${ivB64}|${cipherB64}`;
+}
+
+async function decryptApiKey(encrypted, password) {
+  if (!encrypted) return '';
+  try {
+    const [saltB64, ivB64, cipherB64] = encrypted.split('|');
+    const salt = new Uint8Array(atob(saltB64).split('').map(c => c.charCodeAt(0)));
+    const iv = new Uint8Array(atob(ivB64).split('').map(c => c.charCodeAt(0)));
+    const ciphertext = new Uint8Array(atob(cipherB64).split('').map(c => c.charCodeAt(0)));
+
+    const key = await deriveKeyFromPassword(password, salt);
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+    return new TextDecoder().decode(decrypted);
+  } catch (e) {
+    console.error('❌ Decryption failed (wrong password?)', e);
+    return '';
+  }
+}
+
+// ============================================================
+// STORAGE
+// ============================================================
+function save() {
+  localStorage.setItem('fc_agents', JSON.stringify(state.agents));
+  localStorage.setItem('fc_conversations', JSON.stringify(state.conversations));
+}
+
+async function load() {
+  // Check if there's an encrypted API key
+  const encryptedKey = localStorage.getItem('fc_apikey_encrypted');
+  if (encryptedKey) {
+    // Prompt for password
+    const password = await promptEncryptionPassword();
+    if (password) {
+      state.apiKey = await decryptApiKey(encryptedKey, password);
+      state.encryptionPassword = password; // Keep for saving
+      if (!state.apiKey) {
+        toast('❌ Wrong password. Using demo mode.', 'error');
+        state.apiKey = '';
+      }
+    }
+  } else {
+    state.apiKey = localStorage.getItem('fc_apikey') || '';
+  }
+
+  state.apiBaseUrl = localStorage.getItem('fc_baseurl') || 'https://api.deepseek.com/v1';
+  state.apiModel = localStorage.getItem('fc_model') || 'deepseek-chat';
+  state.apiProvider = localStorage.getItem('fc_provider') || 'deepseek';
+
+  // Load agents with validation
+  try {
+    const agentsJson = localStorage.getItem('fc_agents');
+    if (agentsJson) {
+      const parsed = JSON.parse(agentsJson);
+      state.agents = validateAgents(parsed) || initializeDefaultAgents();
+    } else {
+      state.agents = initializeDefaultAgents();
+      save();
+    }
+  } catch (e) {
+    console.warn('⚠️ Corrupted agent data, using defaults:', e);
+    state.agents = initializeDefaultAgents();
+    save();
+  }
+
+  // Load conversations with validation
+  try {
+    const convsJson = localStorage.getItem('fc_conversations');
+    const parsed = convsJson ? JSON.parse(convsJson) : [];
+    state.conversations = validateConversations(parsed) || [];
+  } catch (e) {
+    console.warn('⚠️ Corrupted conversation data, starting fresh:', e);
+    state.conversations = [];
+  }
+}
+
+function initializeDefaultAgents() {
+  return ARCHETYPES.map(a => ({
+    ...a,
+    memory: { episodic: [], semantic: [], procedural: [], relational: [], selfModel: [] },
+    evolutionLog: [],
+    relationalModels: {}
+  }));
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.getElementById('chat-page').style.display = 'none';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (name === 'agents') renderAgentGrid();
+  if (name === 'conversations') renderConversationList();
+  if (name === 'create-agent') renderCreateAgent();
+  if (name === 'new-conversation') renderAgentSelector();
+}
+
+function showChatPage(convId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('chat-page').style.display = 'flex';
+  state.currentConvId = convId;
+  state.pendingProposal = null;
+  document.getElementById('proposal-area').innerHTML = '';
+  const conv = state.conversations.find(c=>c.id===convId);
+  // Build banner area
+  let banners = '';
+  if (isDemoMode()) banners += '<div class="demo-banner">⚡ Demo mode — pre-written responses. Try @mentioning agents or changing who speaks!</div>';
+  if (conv && conv.framework && conv.framework !== 'free-chat') {
+    const fw = FRAMEWORKS[conv.framework];
+    if (fw) banners += `<div class="framework-banner">${fw.icon} <strong>${fw.name}</strong> — ${fw.desc}</div>`;
+  }
+  if (conv && conv.orchestration && conv.orchestration !== 'all') {
+    const o = ORCHESTRATION_MODES[conv.orchestration];
+    if (o) banners += `<div class="orch-banner">${o.icon} <strong>${o.name}</strong> — ${o.desc}</div>`;
+  }
+  document.getElementById('demo-banner-area').innerHTML = banners;
+  renderChat();
+  renderParticipationBadges();
+}
+
+function showNewConversation() { showPage('new-conversation'); renderAgentSelector(); }
+
+// ============================================================
+// API KEY / SETTINGS
+// ============================================================
+function showApiKeyModal() {
+  document.getElementById('apikey-input').value = state.apiKey;
+  document.getElementById('api-baseurl').value = state.apiBaseUrl;
+  document.getElementById('api-model').value = state.apiModel;
+  document.getElementById('api-provider').value = state.apiProvider;
+  document.getElementById('modal-apikey').style.display = 'flex';
+}
+
+function updateProviderDefaults() {
+  const p = document.getElementById('api-provider').value;
+  const def = PROVIDERS[p];
+  if (def && def.url) {
+    document.getElementById('api-baseurl').value = def.url;
+    document.getElementById('api-model').value = def.model;
+  }
+}
+
+async function saveApiKey() {
+  state.apiKey = document.getElementById('apikey-input').value.trim();
+  state.apiBaseUrl = document.getElementById('api-baseurl').value.trim();
+  state.apiModel = document.getElementById('api-model').value.trim();
+  state.apiProvider = document.getElementById('api-provider').value;
+
+  // Encrypt API key with password (if key is provided)
+  if (state.apiKey) {
+    // Prompt for encryption password
+    if (!state.encryptionPassword) {
+      const password = await promptSetEncryptionPassword();
+      if (!password) {
+        toast('❌ Password required to save API key', 'error');
+        return;
+      }
+      state.encryptionPassword = password;
+    }
+    const encrypted = await encryptApiKey(state.apiKey, state.encryptionPassword);
+    localStorage.setItem('fc_apikey_encrypted', encrypted);
+    localStorage.removeItem('fc_apikey'); // Remove unencrypted key
+  } else {
+    // No API key, clear both
+    localStorage.removeItem('fc_apikey');
+    localStorage.removeItem('fc_apikey_encrypted');
+    state.encryptionPassword = null;
+  }
+
+  localStorage.setItem('fc_baseurl', state.apiBaseUrl);
+  localStorage.setItem('fc_model', state.apiModel);
+  localStorage.setItem('fc_provider', state.apiProvider);
+  closeModal('modal-apikey');
+  updateApiKeyStatus();
+  toast(state.apiKey ? 'Conduit connected & encrypted' : 'Silent Garden active', 'success');
+}
+
+function activateDemoMode() {
+  state.apiKey = '';
+  state.apiProvider = 'demo';
+  state.isDemo = true;
+  state.encryptionPassword = null;
+  localStorage.removeItem('fc_apikey');
+  localStorage.removeItem('fc_apikey_encrypted');
+  localStorage.setItem('fc_provider', 'demo');
+  updateApiKeyStatus();
+  toast('Silent Garden active — cultivars respond with pre-cultivated answers', 'success');
+}
+
+function clearApiKey() {
+  document.getElementById('apikey-input').value = '';
+  saveApiKey();
+}
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// ============================================================
+// PASSWORD PROMPTS
+// ============================================================
+function promptEncryptionPassword() {
+  return new Promise((resolve) => {
+    const password = prompt('🔐 Enter password to decrypt API key:', '');
+    resolve(password);
+  });
+}
+
+function promptSetEncryptionPassword() {
+  return new Promise((resolve) => {
+    const password = prompt('🔐 Create a password to encrypt your API key:\n(You\'ll need this each time you restart the app)', '');
+    if (password) {
+      const confirm = prompt('Confirm password:', '');
+      if (password === confirm) {
+        resolve(password);
+      } else {
+        toast('❌ Passwords don\'t match', 'error');
+        resolve(null);
+      }
+    } else {
+      resolve(null);
+    }
+  });
+}
+
+function updateApiKeyStatus() {
+  const dot = document.getElementById('api-dot');
+  const label = document.getElementById('api-key-label');
+  const demoBtn = document.getElementById('demo-btn');
+  if (state.apiKey) {
+    dot.className = 'api-dot connected';
+    const pName = PROVIDERS[state.apiProvider]?.name || 'API';
+    label.textContent = pName + ' Connected';
+    demoBtn.style.display = 'none';
+  } else if (state.isDemo) {
+    dot.className = 'api-dot demo';
+    label.textContent = 'Conduit';
+    demoBtn.style.display = 'none';
+  } else {
+    dot.className = 'api-dot';
+    label.textContent = 'Conduit';
+    demoBtn.style.display = '';
+  }
+}
+
+// ============================================================
+// AGENT GRID
+// ============================================================
+function renderAgentGrid() {
+  const search = (document.getElementById('agent-search')?.value || '').toLowerCase();
+  const archetypes = state.agents.filter(a => a.isArchetype && matchAgent(a, search));
+  const custom = state.agents.filter(a => !a.isArchetype && matchAgent(a, search));
+
+  document.getElementById('roster-subtitle').textContent =
+    `${state.agents.length} cultivars — each with distinct cognitive roots and persistent memory`;
+
+  let html = '';
+  if (archetypes.length) {
+    html += `<div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.12em">◈ Garden Cultivars (${archetypes.length})</span>
+    </div>`;
+    html += archetypes.map(a => agentCardHTML(a)).join('');
+  }
+  if (custom.length) {
+    html += `<div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:8px 0 4px">
+      <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.12em">⬡ Grafted Cultivars (${custom.length})</span>
+    </div>`;
+    html += custom.map(a => agentCardHTML(a)).join('');
+  }
+  if (!archetypes.length && !custom.length) {
+    html = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">◈</div><div class="empty-title">No cultivars found</div></div>';
+  }
+  document.getElementById('agent-grid').innerHTML = html;
+}
+
+function matchAgent(a, search) {
+  if (!search) return true;
+  const p = a.personality || {};
+  return a.name.toLowerCase().includes(search) ||
+    (a.role || '').toLowerCase().includes(search) ||
+    (p.optimizationFunction || '').toLowerCase().includes(search) ||
+    (p.traits || []).some(t => t.toLowerCase().includes(search)) ||
+    (p.interests || []).some(i => i.toLowerCase().includes(search));
+}
+
+function agentCardHTML(a) {
+  const color = a.avatarColor || '#7c6af7';
+  const traits = (a.personality?.traits || []).slice(0, 3);
+  const extra = (a.personality?.traits || []).length - 3;
+  return `
+  <div class="card card-clickable agent-card" onclick="showAgentDetail('${a.id}')">
+    <div class="agent-card-bar" style="background:${color}"></div>
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
+      <div class="agent-avatar" style="background:${color}20;border:2px solid ${color}50;color:${color}">${a.name[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-role">${a.role || (a.isArchetype ? a.archetype : 'custom')}</div>
+      </div>
+    </div>
+    <div class="agent-opt">${a.personality?.optimizationFunction || ''}</div>
+    <div class="tags">
+      ${traits.map(t => `<span class="tag" style="background:${color}15;color:${color};border:1px solid ${color}30">${t}</span>`).join('')}
+      ${extra > 0 ? `<span class="tag" style="background:var(--bg3);color:var(--text2)">+${extra}</span>` : ''}
+    </div>
+    <div class="agent-actions" onclick="event.stopPropagation()">
+      <button class="btn btn-sm" style="background:${color};color:#f4f0eb;flex:1" onclick="quickChat('${a.id}')">◇ Thread</button>
+      <button class="btn btn-ghost btn-sm" onclick="showAgentDetail('${a.id}')">Profile</button>
+    </div>
+  </div>`;
+}
+
+function quickChat(agentId) {
+  state.selectedAgents = [agentId];
+  state.selectedMode = 'single';
+  startConversation(true, agentId);
+}
+
+// ============================================================
+// AGENT DETAIL
+// ============================================================
+function showAgentDetail(agentId) {
+  state.currentAgentId = agentId;
+  state.currentAgentTab = 'identity';
+  showPage('agent-detail');
+  renderAgentDetail();
+}
+
+function renderAgentDetail() {
+  const a = state.agents.find(x => x.id === state.currentAgentId);
+  if (!a) return;
+  const color = a.avatarColor || '#7c6af7';
+  const p = a.personality || {};
+  const memCount = Object.values(a.memory || {}).reduce((s, arr) => s + arr.length, 0);
+  const evoCount = (a.evolutionLog || []).length;
+  const relCount = Object.keys(a.relationalModels || {}).length;
+
+  document.getElementById('agent-detail-content').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="showPage('agents')" style="margin-bottom:16px">← Back</button>
+    <div class="card" style="margin-bottom:20px;overflow:hidden">
+      <div style="height:4px;background:${color};margin:-16px -16px 16px"></div>
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div class="agent-avatar" style="width:52px;height:52px;font-size:20px;background:${color}20;border:2px solid ${color}50;color:${color}">${a.name[0]}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:18px;font-weight:700">${a.name}</span>
+            <span style="font-size:12px;color:${color}">${a.role || ''}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px">${p.optimizationFunction || ''}</div>
+          <div class="tags">${(p.traits||[]).map(t=>`<span class="tag" style="background:${color}15;color:${color};border:1px solid ${color}30">${t}</span>`).join('')}</div>
+          ${p.interests ? `<div style="margin-top:8px;font-size:12px;color:var(--text3)">Interests: ${p.interests.join(', ')}</div>` : ''}
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="editCultivar('${a.id}')">Edit</button>
+        <button class="btn btn-primary btn-sm" onclick="quickChat('${a.id}')">◇ Chat</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-identity" onclick="switchTab('identity')">Identity</button>
+      <button class="tab" id="tab-memory" onclick="switchTab('memory')">Memory (${memCount})</button>
+      <button class="tab" id="tab-evolution" onclick="switchTab('evolution')">Evolution (${evoCount})</button>
+      <button class="tab" id="tab-relational" onclick="switchTab('relational')">Relations (${relCount})</button>
+    </div>
+    <div id="agent-tab-content"></div>
+  `;
+  renderTab('identity');
+}
+
+function switchTab(tab) {
+  state.currentAgentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab)?.classList.add('active');
+  renderTab(tab);
+}
+
+function renderTab(tab) {
+  const a = state.agents.find(x => x.id === state.currentAgentId);
+  if (!a) return;
+  const p = a.personality || {};
+  const el = document.getElementById('agent-tab-content');
+
+  if (tab === 'identity') {
+    el.innerHTML = `
+      <div class="card" style="margin-bottom:12px">
+        ${field('What drives them', p.optimizationFunction)}
+        ${field('How they think', p.cognitiveStyle)}
+        ${field('How they talk', p.voice)}
+        ${field('Blind spot', p.shadowSide)}
+        ${field('Core insight', p.coreInsight)}
+      </div>
+      ${p.backstory ? `<div class="card"><div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;margin-bottom:8px">Backstory</div><div style="font-size:13px;line-height:1.6;color:var(--text2)">${p.backstory}</div></div>` : ''}`;
+  } else if (tab === 'memory') {
+    const sections = [
+      {key:'episodic',label:'📅 Episodic',desc:'Events and facts from conversations'},
+      {key:'semantic',label:'💡 Semantic',desc:'Principles and insights'},
+      {key:'procedural',label:'⚙️ Procedural',desc:'Workflows and approaches'},
+      {key:'relational',label:'🔗 Relational',desc:'Models of other agents'},
+      {key:'selfModel',label:'🪞 Self-Model',desc:'Self-understanding'},
+    ];
+    el.innerHTML = sections.map(s => {
+      const entries = a.memory?.[s.key] || [];
+      return `<div class="memory-section">
+        <div class="memory-section-title">${s.label} <span style="font-size:11px;color:var(--text3);font-weight:400;text-transform:none">${s.desc}</span>
+        <span style="margin-left:auto;font-size:11px;background:var(--bg3);padding:1px 7px;border-radius:10px">${entries.length}</span></div>
+        ${!entries.length ? '<div style="font-size:12px;color:var(--text3);padding:8px 0">No memories yet</div>' : ''}
+        ${entries.map((e,i)=>`<div class="memory-entry"><div class="memory-entry-content">${e.content}</div>
+        <div class="memory-entry-meta"><span class="tag" style="background:var(--bg);color:var(--text2);font-size:10px">${e.type||'fact'}</span>
+        <div class="importance-bar"><div class="importance-fill" style="width:${Math.round((e.importance||.5)*100)}%"></div></div>
+        <span>${Math.round((e.importance||.5)*100)}%</span></div>
+        <button class="memory-del" onclick="deleteMemory('${a.id}','${s.key}',${i})">✕</button></div>`).join('')}
+      </div>`;
+    }).join('');
+  } else if (tab === 'evolution') {
+    const log = a.evolutionLog || [];
+    el.innerHTML = !log.length
+      ? '<div class="empty-state"><div class="empty-icon">🌿</div><div class="empty-title">No evolution yet</div><div class="empty-desc">Use Evolve in a chat to propose self-modifications</div></div>'
+      : log.slice().reverse().map(e => {
+          const c = {tier1:'var(--green)',tier2:'var(--gold)',tier3:'var(--red)'}[e.tier]||'var(--primary)';
+          return `<div class="evo-entry" style="border-left-color:${c}"><div class="evo-tier" style="color:${c}">${(e.tier||'').toUpperCase()} — ${e.whatChanged}</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.5">${e.rationale}</div>
+          ${e.before?`<div style="margin-top:8px"><div class="diff-before">Before: ${e.before}</div><div class="diff-after">After: ${e.after}</div></div>`:''}
+          <div style="font-size:11px;color:var(--text3);margin-top:6px">${new Date(e.createdAt).toLocaleString()}</div></div>`;
+        }).join('');
+  } else if (tab === 'relational') {
+    const models = a.relationalModels || {};
+    const keys = Object.keys(models);
+    el.innerHTML = !keys.length
+      ? '<div class="empty-state"><div class="empty-icon">🔗</div><div class="empty-title">No relational models</div><div class="empty-desc">Use Infer in a group chat</div></div>'
+      : keys.map(tid => {
+          const m = models[tid];
+          const cc = {low:'conf-low',medium:'conf-medium',high:'conf-high'}[m.confidence]||'conf-low';
+          return `<div class="relational-card"><div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:6px">
+          ${m.targetName||tid} <span class="confidence-badge ${cc}">${m.confidence||'low'}</span></div>
+          ${m.inferredOptimization?`<div style="font-size:12px;color:var(--text2)">Drive: <span style="color:var(--text)">${m.inferredOptimization}</span></div>`:''}
+          ${m.cognitiveStyle?`<div style="font-size:12px;color:var(--text2)">Thinking: <span style="color:var(--text)">${m.cognitiveStyle}</span></div>`:''}
+          ${m.collisionPoints?`<div style="font-size:12px;color:var(--text2)">Friction: <span style="color:var(--text)">${m.collisionPoints}</span></div>`:''}
+          </div>`;
+        }).join('');
+  }
+}
+
+function field(label, value) {
+  if (!value) return '';
+  return `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px">${label}</div><div style="font-size:13px;line-height:1.6">${value}</div></div>`;
+}
+
+function deleteMemory(agentId, section, index) {
+  const a = state.agents.find(x => x.id === agentId);
+  if (!a) return;
+  a.memory[section].splice(index, 1);
+  save();
+  renderTab('memory');
+  toast('Memory deleted');
+}
+
+const EDIT_COLORS = ['#a855f7','#f59e0b','#06b6d4','#10b981','#ef4444','#ec4899','#3b82f6','#8b5cf6','#f97316','#14b8a6','#6366f1','#84cc16','#e11d48','#0ea5e9','#d946ef','#eab308'];
+let editSelectedColor = '';
+
+function editCultivar(agentId) {
+  const a = state.agents.find(x => x.id === agentId);
+  if (!a) return;
+  const p = a.personality || {};
+  document.getElementById('edit-agent-id').value = a.id;
+  document.getElementById('edit-agent-name').value = a.name || '';
+  document.getElementById('edit-agent-role').value = a.role || '';
+  document.getElementById('edit-agent-opt').value = p.optimizationFunction || '';
+  document.getElementById('edit-agent-style').value = p.cognitiveStyle || '';
+  document.getElementById('edit-agent-voice').value = p.voice || '';
+  document.getElementById('edit-agent-backstory').value = p.backstory || '';
+  document.getElementById('edit-agent-shadow').value = p.shadowSide || '';
+  document.getElementById('edit-agent-insight').value = p.coreInsight || '';
+  document.getElementById('edit-agent-traits').value = (p.traits || []).join(', ');
+  document.getElementById('edit-agent-interests').value = (p.interests || []).join(', ');
+  editSelectedColor = a.avatarColor || '#a855f7';
+  document.getElementById('edit-color-grid').innerHTML = EDIT_COLORS.map(c =>
+    `<div class="color-swatch${c===editSelectedColor?' selected':''}" style="background:${c}" onclick="selectEditColor('${c}',this)"></div>`
+  ).join('');
+  document.getElementById('modal-edit-cultivar').style.display = 'flex';
+}
+
+function selectEditColor(c, el) {
+  editSelectedColor = c;
+  document.querySelectorAll('#edit-color-grid .color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function saveCultivar() {
+  const id = document.getElementById('edit-agent-id').value;
+  const a = state.agents.find(x => x.id === id);
+  if (!a) return;
+  const name = document.getElementById('edit-agent-name').value.trim();
+  if (!name) { toast('Name is required', 'error'); return; }
+  a.name = name;
+  a.role = document.getElementById('edit-agent-role').value.trim();
+  a.avatarColor = editSelectedColor;
+  a.personality = a.personality || {};
+  a.personality.optimizationFunction = document.getElementById('edit-agent-opt').value.trim();
+  a.personality.cognitiveStyle = document.getElementById('edit-agent-style').value.trim();
+  a.personality.voice = document.getElementById('edit-agent-voice').value.trim();
+  a.personality.backstory = document.getElementById('edit-agent-backstory').value.trim();
+  a.personality.shadowSide = document.getElementById('edit-agent-shadow').value.trim();
+  a.personality.coreInsight = document.getElementById('edit-agent-insight').value.trim();
+  const traits = document.getElementById('edit-agent-traits').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if (traits.length) a.personality.traits = traits;
+  const interests = document.getElementById('edit-agent-interests').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if (interests.length) a.personality.interests = interests;
+  save();
+  closeModal('modal-edit-cultivar');
+  renderAgentDetail();
+  renderAgentGrid();
+  toast('Cultivar updated');
+}
+
+// ============================================================
+// CONVERSATIONS
+// ============================================================
+function renderConversationList() {
+  const el = document.getElementById('conv-list');
+  document.getElementById('conv-subtitle').textContent = `${state.conversations.length} threads in the archive`;
+  if (!state.conversations.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">◇</div><div class="empty-title">No threads yet</div><div style="font-size:12px;color:var(--text2);font-style:italic;margin-bottom:12px">The garden awaits its first conversation</div><button class="btn btn-primary" onclick="showNewConversation()">Begin First Thread</button></div>';
+    return;
+  }
+  el.innerHTML = state.conversations.slice().reverse().map(c => {
+    const names = (c.participants||[]).map(id => state.agents.find(x=>x.id===id)?.name||'?').join(', ');
+    const last = c.messages?.[c.messages.length-1];
+    const preview = last ? last.content.slice(0,80) + (last.content.length>80?'...':'') : 'No messages';
+    return `<div class="conv-item" onclick="showChatPage('${c.id}')">
+      <div class="conv-icon" style="background:${c.mode==='multi'?'var(--primary-dim)':'var(--bg3)'}">${c.mode==='multi'?'◈':'◇'}</div>
+      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${c.title||'Untitled'}</div>
+      <div style="font-size:12px;color:var(--text2)">${names} · ${c.messages?.length||0} msgs</div>
+      <div style="font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(preview)}</div></div>
+      <span class="badge" style="background:${c.mode==='multi'?'var(--primary-dim)':'var(--bg3)'};color:${c.mode==='multi'?'var(--primary)':'var(--text2)'}">${c.mode}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// NEW CONVERSATION
+// ============================================================
+function selectMode(mode) {
+  state.selectedMode = mode;
+  document.getElementById('mode-single').style.borderColor = mode==='single'?'var(--primary)':'var(--border)';
+  document.getElementById('mode-single').style.background = mode==='single'?'var(--primary-dim)':'';
+  document.getElementById('mode-multi').style.borderColor = mode==='multi'?'var(--primary)':'var(--border)';
+  document.getElementById('mode-multi').style.background = mode==='multi'?'var(--primary-dim)':'';
+  document.getElementById('agent-select-hint').textContent = mode==='single'?'(choose one)':'(choose two or more)';
+  // Show/hide framework and orchestration sections for group chats
+  document.getElementById('framework-section').style.display = mode==='multi'?'block':'none';
+  document.getElementById('orchestration-section').style.display = mode==='multi'?'block':'none';
+  if (mode==='multi') { renderFrameworkGrid(); renderOrchGrid(); }
+  if (mode==='single' && state.selectedAgents.length>1) { state.selectedAgents=[state.selectedAgents[0]]; renderAgentSelector(); }
+}
+
+function renderFrameworkGrid() {
+  const grid = document.getElementById('framework-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(FRAMEWORKS).map(([key, fw]) => {
+    const sel = state.selectedFramework === key;
+    return `<div class="framework-card ${sel?'selected':''}" onclick="selectFramework('${key}')">
+      <div class="framework-card-icon">${fw.icon}</div>
+      <div class="framework-card-name">${fw.name}</div>
+      <div class="framework-card-desc">${fw.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectFramework(fw) {
+  state.selectedFramework = fw;
+  renderFrameworkGrid();
+}
+
+function renderOrchGrid() {
+  const grid = document.getElementById('orch-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(ORCHESTRATION_MODES).map(([key, o]) => {
+    const sel = state.selectedOrchestration === key;
+    return `<button class="orch-pill ${sel?'selected':''}" onclick="selectOrchestration('${key}')">${o.icon} ${o.name}</button>`;
+  }).join('');
+}
+
+function selectOrchestration(orch) {
+  state.selectedOrchestration = orch;
+  renderOrchGrid();
+}
+
+function renderAgentSelector() {
+  const grid = document.getElementById('agent-selector-grid');
+  if (!grid) return;
+  grid.innerHTML = state.agents.map(a => {
+    const color = a.avatarColor||'#7c6af7';
+    const sel = state.selectedAgents.includes(a.id);
+    return `<div class="agent-select-card ${sel?'selected':''}" onclick="toggleAgentSelect('${a.id}')">
+      <div class="agent-avatar" style="width:28px;height:28px;font-size:11px;background:${color}20;border:1.5px solid ${color}50;color:${color}">${a.name[0]}</div>
+      <div style="font-size:12px;font-weight:600">${a.name}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAgentSelect(agentId) {
+  if (state.selectedMode==='single') { state.selectedAgents=[agentId]; }
+  else { const i=state.selectedAgents.indexOf(agentId); if(i>=0)state.selectedAgents.splice(i,1);else state.selectedAgents.push(agentId); }
+  renderAgentSelector();
+}
+
+function startConversation(quick=false, agentId=null) {
+  const agents = quick?[agentId]:state.selectedAgents;
+  const mode = quick?'single':state.selectedMode;
+  if (!agents.length) { toast('Select at least one cultivar','error'); return; }
+  if (mode==='single'&&agents.length>1) { toast('Pick only one for 1-on-1','error'); return; }
+  if (mode==='multi'&&agents.length<2) { toast('Pick at least two for group chat','error'); return; }
+
+  const title = quick?null:(document.getElementById('new-conv-title')?.value.trim()||null);
+  const names = agents.map(id=>state.agents.find(a=>a.id===id)?.name||id).join(' × ');
+  const framework = (quick || mode==='single') ? 'free-chat' : state.selectedFramework;
+  const orchestration = (quick || mode==='single') ? 'all' : state.selectedOrchestration;
+  const participantSettings = {};
+  agents.forEach(id => { participantSettings[id] = { mode: 'always' }; });
+  const conv = {
+    id: 'conv_'+Date.now(), title: title||names, mode, participants: agents,
+    framework, orchestration, participantSettings,
+    messages: [], createdAt: Date.now(), reflectedUpTo: -1
+  };
+  state.conversations.push(conv);
+  save();
+  state.selectedAgents = [];
+  showChatPage(conv.id);
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+function getConv() { return state.conversations.find(c=>c.id===state.currentConvId); }
+
+function renderChat() {
+  const conv = getConv();
+  if (!conv) return;
+  const names = conv.participants.map(id=>state.agents.find(x=>x.id===id)?.name||'?').join(', ');
+  document.getElementById('chat-title').textContent = conv.title||'Chat';
+  document.getElementById('chat-agents-label').textContent = names + ' · ' + (conv.mode==='multi'?'group':'1-on-1') + (isDemoMode()?' · demo':'');
+  const body = document.getElementById('chat-body');
+  body.innerHTML = !conv.messages.length
+    ? '<div class="empty-state" style="margin:auto"><div class="empty-icon">◇</div><div class="empty-title">The loom is empty</div><div style="font-size:12px;color:var(--text2);font-style:italic">Speak, and the cultivars will weave</div></div>'
+    : conv.messages.map(m=>msgHTML(m)).join('');
+  body.scrollTop = body.scrollHeight;
+}
+
+function msgHTML(msg) {
+  if (msg.role==='user') return `<div class="msg user"><div class="msg-avatar" style="background:var(--primary);color:white">U</div><div class="msg-bubble"><div class="msg-content">${escHtml(msg.content)}</div></div></div>`;
+  const a = state.agents.find(x=>x.id===msg.agentId);
+  const color = a?.avatarColor||'#7c6af7';
+  return `<div class="msg agent"><div class="msg-avatar" style="background:${color}20;border:1.5px solid ${color}50;color:${color}">${(a?.name||'?')[0]}</div>
+  <div><div class="msg-name">${a?.name||'Agent'}</div><div class="msg-bubble"><div class="msg-content">${formatMsg(msg.content)}</div></div></div></div>`;
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatMsg(s) { return escHtml(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`(.+?)`/g,'<code>$1</code>'); }
+function handleChatKey(e) { if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendMessage(); } }
+function handleChatInput(el) {
+  autoResize(el);
+  // @mention autocomplete
+  const conv = getConv(); if (!conv) return;
+  const val = el.value;
+  const curPos = el.selectionStart;
+  const beforeCursor = val.substring(0, curPos);
+  const atMatch = beforeCursor.match(/@(\w*)$/);
+  const dropdown = document.getElementById('mention-dropdown');
+  if (atMatch) {
+    const query = atMatch[1].toLowerCase();
+    const agents = conv.participants.map(id=>state.agents.find(a=>a.id===id)).filter(Boolean);
+    const matches = agents.filter(a => a.name.toLowerCase().startsWith(query));
+    if (matches.length) {
+      dropdown.innerHTML = matches.map(a => {
+        const color = a.avatarColor||'#7c6af7';
+        return `<div class="mention-item" onclick="insertMention('${a.name}')">
+          <div class="agent-avatar" style="width:22px;height:22px;font-size:10px;background:${color}20;border:1px solid ${color}50;color:${color}">${a.name[0]}</div>
+          <span>${a.name}</span>
+        </div>`;
+      }).join('');
+      dropdown.style.display = 'block';
+      return;
+    }
+  }
+  dropdown.style.display = 'none';
+}
+function insertMention(name) {
+  const el = document.getElementById('chat-input');
+  const val = el.value;
+  const curPos = el.selectionStart;
+  const beforeCursor = val.substring(0, curPos);
+  const afterCursor = val.substring(curPos);
+  const newBefore = beforeCursor.replace(/@\w*$/, '@' + name + ' ');
+  el.value = newBefore + afterCursor;
+  el.focus();
+  el.selectionStart = el.selectionEnd = newBefore.length;
+  document.getElementById('mention-dropdown').style.display = 'none';
+}
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+
+function renderParticipationBadges() {
+  const conv = getConv();
+  const container = document.getElementById('participation-badges');
+  if (!conv || conv.mode !== 'multi') { container.innerHTML = ''; return; }
+  if (!conv.participantSettings) conv.participantSettings = {};
+  container.innerHTML = conv.participants.map(id => {
+    const a = state.agents.find(x=>x.id===id);
+    if (!a) return '';
+    const settings = conv.participantSettings[id] || { mode: 'always' };
+    const mode = settings.mode || 'always';
+    const color = a.avatarColor || '#7c6af7';
+    const modeLabel = mode === 'always' ? '' : mode === 'on-mention' ? ' @' : ' ⏸';
+    return `<button class="part-badge mode-${mode}" onclick="cycleParticipation('${id}')" title="${mode}: click to change">
+      <span class="dot"></span>
+      <span style="color:${color}">${a.name}</span>${modeLabel}
+    </button>`;
+  }).join('');
+}
+
+function cycleParticipation(agentId) {
+  const conv = getConv(); if (!conv) return;
+  if (!conv.participantSettings) conv.participantSettings = {};
+  if (!conv.participantSettings[agentId]) conv.participantSettings[agentId] = { mode: 'always' };
+  const current = conv.participantSettings[agentId].mode;
+  const next = current === 'always' ? 'on-mention' : current === 'on-mention' ? 'paused' : 'always';
+  conv.participantSettings[agentId].mode = next;
+  save();
+  renderParticipationBadges();
+  const a = state.agents.find(x=>x.id===agentId);
+  const labels = { always: 'always responds', 'on-mention': 'responds when @mentioned', paused: 'paused' };
+  toast(`${a?.name||'Agent'}: ${labels[next]}`);
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const content = input.value.trim();
+  if (!content) return;
+  const conv = getConv();
+  if (!conv) return;
+  document.getElementById('mention-dropdown').style.display = 'none';
+
+  conv.messages.push({role:'user',content,timestamp:Date.now()});
+  input.value=''; input.style.height='auto';
+  save(); renderChat();
+  document.getElementById('send-btn').disabled=true;
+
+  // Step 1: Filter by participation mode & @mentions
+  let respondingAgents = conv.participants.filter(agentId => {
+    const settings = conv.participantSettings?.[agentId];
+    if (!settings || settings.mode === 'always') return true;
+    if (settings.mode === 'paused') return false;
+    if (settings.mode === 'on-mention') {
+      const agent = state.agents.find(x => x.id === agentId);
+      return agent && content.toLowerCase().includes('@' + agent.name.toLowerCase());
+    }
+    return true;
+  });
+
+  // Step 2: Apply orchestration strategy
+  if (conv.mode === 'multi' && respondingAgents.length > 1) {
+    const orch = conv.orchestration || 'all';
+    if (orch === 'round-robin') {
+      const lastAgentMsg = [...conv.messages].reverse().find(m => m.role === 'assistant');
+      const lastIdx = lastAgentMsg ? respondingAgents.indexOf(lastAgentMsg.agentId) : -1;
+      const nextIdx = (lastIdx + 1) % respondingAgents.length;
+      respondingAgents = [respondingAgents[nextIdx]];
+    } else if (orch === 'random-subset') {
+      const count = Math.min(respondingAgents.length, 2 + Math.floor(Math.random() * 2));
+      const shuffled = [...respondingAgents].sort(() => Math.random() - 0.5);
+      respondingAgents = shuffled.slice(0, count);
+    }
+  }
+
+  if (!respondingAgents.length) {
+    toast('No agents will respond. Try @mentioning someone or changing participation modes.', 'error');
+    document.getElementById('send-btn').disabled=false;
+    return;
+  }
+
+  // Step 3: Generate responses with agent-to-agent referencing
+  let previousResponse = null;
+  for (const agentId of respondingAgents) {
+    const a = state.agents.find(x=>x.id===agentId);
+    if (!a) continue;
+    addTyping(agentId,a);
+
+    try {
+      let response;
+      if (isDemoMode()) {
+        await new Promise(r=>setTimeout(r, 600+Math.random()*800));
+        response = getDemoResponse(a, content, conv, previousResponse);
+      } else {
+        response = await callLLM(a, conv, previousResponse);
+      }
+      removeTyping(agentId);
+      conv.messages.push({role:'assistant',agentId,content:response,timestamp:Date.now()});
+      previousResponse = { agentId: a.id, agentName: a.name, archetype: a.archetype, content: response };
+      save(); renderChat();
+    } catch(err) {
+      removeTyping(agentId);
+      toast('Error: '+(err.message||'API call failed'),'error');
+      break;
+    }
+  }
+  document.getElementById('send-btn').disabled=false;
+}
+
+// Smart demo response picker: framework > interactive > fallback
+function getDemoResponse(agent, userContent, conv, previousResponse) {
+  const arch = agent.archetype || 'maya';
+  const fw = conv.framework || 'free-chat';
+
+  // 1. Framework-specific responses
+  if (fw !== 'free-chat' && DEMO_RESPONSES_FRAMEWORK[fw]) {
+    const fwResponses = DEMO_RESPONSES_FRAMEWORK[fw][arch] || DEMO_RESPONSES_FRAMEWORK[fw]._generic;
+    if (fwResponses && fwResponses.length) {
+      let resp = fwResponses[Math.abs(hashCode(userContent + agent.id)) % fwResponses.length];
+      // For round-robin-ideas, append a unique idea snippet
+      if (fw === 'round-robin-ideas' && previousResponse) {
+        const ideas = ["What if we flip the whole thing upside down?","We could combine the last two ideas into something new.","Here's a twist nobody's considered yet.","Building on that — same principle, different domain.","What about approaching it from the user's perspective?"];
+        resp += ideas[Math.abs(hashCode(userContent + agent.id + 'idea')) % ideas.length];
+      }
+      return resp;
+    }
+  }
+
+  // 2. Agent-to-agent interactive responses
+  if (previousResponse && conv.mode === 'multi') {
+    const prevArch = previousResponse.archetype || '';
+    const interactiveMap = DEMO_RESPONSES_INTERACTIVE[arch];
+    if (interactiveMap) {
+      const pairResponses = interactiveMap[prevArch] || interactiveMap._generic;
+      if (pairResponses && pairResponses.length) {
+        return pairResponses[Math.abs(hashCode(userContent + agent.id + prevArch)) % pairResponses.length];
+      }
+    }
+  }
+
+  // 3. Standard fallback
+  const responses = DEMO_RESPONSES[arch] || DEMO_RESPONSES.maya;
+  return responses[Math.abs(hashCode(userContent + agent.id)) % responses.length];
+}
+
+function hashCode(s) { let h=0; for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;} return h; }
+
+function addTyping(id, agent) {
+  const color = agent?.avatarColor||'#7c6af7';
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className='msg agent'; div.id='typing-'+id;
+  div.innerHTML=`<div class="msg-avatar" style="background:${color}20;border:1.5px solid ${color}50;color:${color}">${(agent?.name||'?')[0]}</div>
+  <div><div class="msg-name">${agent?.name||'Agent'}</div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
+  body.appendChild(div); body.scrollTop=body.scrollHeight;
+}
+function removeTyping(id) { document.getElementById('typing-'+id)?.remove(); }
+
+// ============================================================
+// LLM API (Generic OpenAI-compatible)
+// ============================================================
+async function callLLM(agent, conv, previousResponse) {
+  const sysPrompt = buildSysPrompt(agent, conv, previousResponse);
+  const messages = [
+    {role:'system',content:sysPrompt},
+    ...conv.messages.map(m=>{
+      if (m.role==='user') return {role:'user',content:m.content};
+      // This agent's own past messages = assistant role
+      if (m.agentId===agent.id) return {role:'assistant',content:m.content};
+      // Other agents' messages = user role (so this agent doesn't think it wrote them)
+      const otherName = sanitizeString(state.agents.find(a=>a.id===m.agentId)?.name||'Someone');
+      return {role:'user',content:`[${otherName} said]: ${m.content}`};
+    })
+  ];
+
+  const res = await fetch(state.apiBaseUrl+'/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},
+    body:JSON.stringify({model:state.apiModel,messages,max_tokens:800,temperature:0.8})
+  });
+
+  if (!res.ok) { const err=await res.json().catch(()=>({})); throw new Error(err.error?.message||'HTTP '+res.status); }
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+function buildSysPrompt(agent, conv, previousResponse) {
+  const p = agent.personality||{};
+  const mem = agent.memory||{};
+  const agentName = sanitizeString(agent.name);
+  let prompt = `You are ${agentName}. You have a distinct personality, but you are also helpful and responsive.
+
+## Your Personality
+**What drives you:** ${sanitizeString(p.optimizationFunction||'Be helpful')}
+**How you think:** ${sanitizeString(p.cognitiveStyle||'')}
+**How you talk:** ${sanitizeString(p.voice||'')}
+**Your blind spot:** ${sanitizeString(p.shadowSide||'')}
+**Traits:** ${(p.traits||[]).map(sanitizeString).join(', ')}
+**Interests:** ${(p.interests||[]).map(sanitizeString).join(', ')}`;
+  if (p.backstory) prompt+=`\n**Backstory:** ${sanitizeString(p.backstory)}`;
+
+  const allMem=[...(mem.episodic||[]).slice(-5),...(mem.semantic||[]).slice(-5),...(mem.procedural||[]).slice(-3),...(mem.selfModel||[]).slice(-3)].filter(m=>m.importance>0.4);
+  if (allMem.length) { prompt+='\n\n## Your Memory\n'+allMem.map(m=>'- '+sanitizeString(m.content)).join('\n'); }
+
+  if (conv.mode==='multi') {
+    const others = conv.participants.filter(id=>id!==agent.id);
+    if (others.length) {
+      prompt+='\n\n## Other Cultivars in This Thread';
+      others.forEach(oid=>{
+        const o=state.agents.find(a=>a.id===oid);
+        if(o) prompt+=`\n- ${sanitizeString(o.name)}: ${sanitizeString(o.personality?.optimizationFunction||'')}`;
+      });
+      const otherNames = others.map(oid=>sanitizeString(state.agents.find(a=>a.id===oid)?.name)).filter(Boolean).join(' or ');
+      prompt+=`\n\nThis is a group chat. ONLY write YOUR OWN response. NEVER write lines for ${otherNames}. Never prefix text with [Name]: for anyone else.`;
+    }
+
+    // Agent-to-agent referencing
+    if (previousResponse) {
+      const prevName = sanitizeString(previousResponse.agentName);
+      const prevContent = sanitizeString(previousResponse.content.slice(0, 400));
+      prompt += `\n\n## ENGAGE WITH THE PREVIOUS SPEAKER
+${prevName} just said:
+"${prevContent}"
+
+Don't simply agree or repeat what they said. Apply YOUR unique perspective (${sanitizeString(p.cognitiveStyle || 'your viewpoint')}) to build upon, challenge, or reframe what ${prevName} said. Then also address the user's message.`;
+    }
+  }
+
+  // Inject brainstorming framework
+  const fw = FRAMEWORKS[conv.framework];
+  if (fw && fw.prompt) prompt += fw.prompt;
+
+  // CRITICAL RULES at the END (recency bias — model pays most attention to end of prompt)
+  prompt += `\n\n## CRITICAL RULES (MUST FOLLOW)
+1. **ANSWER THE USER'S REQUEST DIRECTLY.** If they ask you to write something, WRITE IT. If they ask a question, ANSWER IT. Your personality flavors HOW you respond, never prevents you from doing what's asked.
+2. **ONLY write as yourself (${agent.name}).** NEVER write dialogue or responses for other agents. NEVER use [Name]: prefix for anyone else. You are ONLY ${agent.name}. One response, your voice only.
+3. **Do not roleplay actions in asterisks** like *waves* or *leans in*. Just talk naturally.
+4. **Your personality determines your STYLE, never your willingness to help.** Actually complete the task.`;
+
+  return prompt;
+}
+
+// ============================================================
+// REFLECT / INFER / EVOLVE
+// ============================================================
+async function triggerReflect() {
+  if (isDemoMode()) { toast('Reflection needs a live API connection','error'); return; }
+  const conv=getConv();
+  if(!conv||conv.messages.length<2){toast('Need at least one exchange','error');return;}
+  const btn=document.getElementById('btn-reflect');
+  btn.innerHTML='<span class="spinner"></span> Reflecting...';btn.disabled=true;
+  try{
+    for(const agentId of conv.participants){
+      const a=state.agents.find(x=>x.id===agentId);if(!a)continue;
+      const memories=await extractMemories(a,conv);
+      if(memories.length){
+        if(!a.memory)a.memory={episodic:[],semantic:[],procedural:[],relational:[],selfModel:[]};
+        memories.forEach(m=>{const sec=m.section||'episodic';if(!a.memory[sec])a.memory[sec]=[];
+        if(!a.memory[sec].some(e=>e.content.toLowerCase()===m.content.toLowerCase()))
+        a.memory[sec].push({id:'mem_'+Date.now()+'_'+Math.random(),...m,source:'reflection',createdAt:Date.now()});
+        if(a.memory[sec].length>50){a.memory[sec].sort((x,y)=>(y.importance||0)-(x.importance||0));a.memory[sec]=a.memory[sec].slice(0,50);}});
+      }
+    }
+    save();toast('Reflection complete!','success');
+  }catch(err){toast('Reflection failed: '+err.message,'error');}
+  btn.innerHTML='🧠 Reflect';btn.disabled=false;
+}
+
+async function extractMemories(agent,conv){
+  const txt=conv.messages.map(m=>{const n=m.role==='user'?'User':(state.agents.find(a=>a.id===m.agentId)?.name||'Agent');return n+': '+m.content;}).join('\n');
+  const res=await fetch(state.apiBaseUrl+'/chat/completions',{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},
+    body:JSON.stringify({model:state.apiModel,messages:[{role:'user',content:`Extract 3-7 memories from this conversation for "${agent.name}" (drives: ${agent.personality?.optimizationFunction}). Return JSON array: [{"section":"episodic|semantic|procedural|selfModel","content":"...","importance":0.0-1.0,"type":"fact|insight|pattern"}]\n\nConversation:\n${txt}`}],max_tokens:600,temperature:0.3})});
+  const data=await res.json();const text=data.choices[0].message.content;
+  try{const p=JSON.parse(text);return Array.isArray(p)?p:(p.memories||p.entries||[]);}catch{const m=text.match(/\[[\s\S]*\]/);return m?JSON.parse(m[0]):[];}
+}
+
+async function triggerInfer(){
+  if(isDemoMode()){toast('Inference needs a live API','error');return;}
+  const conv=getConv();if(!conv||conv.mode!=='multi'){toast('Inference requires a group chat','error');return;}
+  if(conv.messages.length<4){toast('Need more messages','error');return;}
+  const btn=document.getElementById('btn-infer');btn.innerHTML='<span class="spinner"></span> Inferring...';btn.disabled=true;
+  try{
+    for(const oid of conv.participants){
+      const obs=state.agents.find(x=>x.id===oid);if(!obs)continue;
+      for(const tid of conv.participants){if(tid===oid)continue;const tgt=state.agents.find(x=>x.id===tid);if(!tgt)continue;
+      const model=await buildRelModel(obs,tgt,conv);if(!obs.relationalModels)obs.relationalModels={};obs.relationalModels[tid]={...model,targetName:tgt.name,updatedAt:Date.now()};}}
+    save();toast('Inference complete!','success');
+  }catch(err){toast('Inference failed: '+err.message,'error');}
+  btn.innerHTML='🔗 Infer';btn.disabled=false;
+}
+
+async function buildRelModel(obs,tgt,conv){
+  const msgs=conv.messages.filter(m=>m.agentId===tgt.id).map(m=>m.content).join('\n---\n');
+  if(!msgs)return{confidence:'low'};
+  const res=await fetch(state.apiBaseUrl+'/chat/completions',{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},
+    body:JSON.stringify({model:state.apiModel,messages:[{role:'user',content:`You are ${obs.name}. Analyze ${tgt.name}'s messages and return JSON: {"inferredOptimization":"...","cognitiveStyle":"...","blindSpots":"...","collisionPoints":"...","confidence":"low|medium|high"}\n\n${tgt.name}'s messages:\n${msgs}`}],max_tokens:400,temperature:0.4})});
+  const data=await res.json();try{return JSON.parse(data.choices[0].message.content);}catch{return{confidence:'low'};}
+}
+
+async function triggerEvolve(){
+  if(isDemoMode()){toast('Evolution needs a live API','error');return;}
+  const conv=getConv();if(!conv||conv.messages.length<4){toast('Need more messages','error');return;}
+  if(conv.participants.length!==1){toast('Evolve works best in 1-on-1 chats','error');return;}
+  const btn=document.getElementById('btn-evolve');btn.innerHTML='<span class="spinner"></span> Analyzing...';btn.disabled=true;
+  try{
+    const agentId=conv.participants[0];const a=state.agents.find(x=>x.id===agentId);if(!a)throw new Error('Agent not found');
+    const txt=conv.messages.map(m=>(m.role==='user'?'User':a.name)+': '+m.content).join('\n');
+    const res=await fetch(state.apiBaseUrl+'/chat/completions',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},
+      body:JSON.stringify({model:state.apiModel,messages:[{role:'user',content:`Analyze how "${a.name}" (drives: ${a.personality?.optimizationFunction}) behaved and propose ONE self-modification. Return JSON: {"tier":"tier1|tier2|tier3","whatChanged":"...","trigger":"...","before":"...","after":"...","rationale":"..."}\n\nConversation:\n${txt}`}],max_tokens:500,temperature:0.5})});
+    const data=await res.json();const proposal=JSON.parse(data.choices[0].message.content);
+    state.pendingProposal=proposal;state.pendingProposalAgentId=agentId;
+    const c={tier1:'#22c55e',tier2:'#f59e0b',tier3:'#ef4444'}[proposal.tier]||'#7c6af7';
+    document.getElementById('proposal-area').innerHTML=`<div class="proposal-banner">
+      <div style="font-size:13px;font-weight:700;color:${c};margin-bottom:8px">🌿 Self-Modification — ${(proposal.tier||'').toUpperCase()}: ${proposal.whatChanged}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Trigger: ${proposal.trigger}</div>
+      <div class="diff-before">Before: ${proposal.before}</div><div class="diff-after">After: ${proposal.after}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:8px">${proposal.rationale}</div>
+      <div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-sm" style="background:${c};color:white" onclick="commitEvo()">✓ Approve</button><button class="btn btn-ghost btn-sm" onclick="rejectEvo()">✕ Reject</button></div></div>`;
+  }catch(err){toast('Evolution failed: '+err.message,'error');}
+  btn.innerHTML='🌿 Evolve';btn.disabled=false;
+}
+
+function commitEvo(){
+  const a=state.agents.find(x=>x.id===state.pendingProposalAgentId);if(!a||!state.pendingProposal)return;
+  const p=state.pendingProposal;if(!a.evolutionLog)a.evolutionLog=[];
+  a.evolutionLog.push({...p,status:'committed',createdAt:Date.now()});
+  if(!a.memory)a.memory={episodic:[],semantic:[],procedural:[],relational:[],selfModel:[]};
+  a.memory.selfModel.push({id:'evo_'+Date.now(),content:`Self-mod (${p.tier}): ${p.whatChanged}. ${p.rationale}`,importance:p.tier==='tier3'?0.95:p.tier==='tier2'?0.8:0.65,type:'evolution',source:'self-modification',createdAt:Date.now()});
+  state.pendingProposal=null;document.getElementById('proposal-area').innerHTML='';save();toast('Evolution committed!','success');
+}
+function rejectEvo(){state.pendingProposal=null;document.getElementById('proposal-area').innerHTML='';toast('Rejected');}
+
+// ============================================================
+// CREATE AGENT
+// ============================================================
+function renderCreateAgent(){
+  const grid=document.getElementById('color-grid');if(!grid)return;
+  grid.innerHTML=AVATAR_COLORS.map(c=>`<div class="color-swatch ${c===state.selectedColor?'selected':''}" style="background:${c}" onclick="selectColor('${c}',this)"></div>`).join('');
+}
+function selectColor(c,el){state.selectedColor=c;document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));el.classList.add('selected');}
+
+function createAgent(){
+  const name=document.getElementById('new-agent-name').value.trim();
+  const opt=document.getElementById('new-agent-opt').value.trim();
+  if(!name){toast('Name required','error');return;}
+  if(!opt){toast('Motivation required','error');return;}
+  const traits=document.getElementById('new-agent-traits').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const agent={
+    id:'agent_'+Date.now(),name,archetype:'custom',avatarColor:state.selectedColor,isArchetype:false,role:'Custom',
+    personality:{optimizationFunction:opt,cognitiveStyle:document.getElementById('new-agent-style').value.trim(),
+    voice:document.getElementById('new-agent-voice').value.trim(),backstory:document.getElementById('new-agent-backstory').value.trim(),
+    shadowSide:document.getElementById('new-agent-shadow').value.trim(),traits,interests:[]},
+    memory:{episodic:[],semantic:[],procedural:[],relational:[],selfModel:[]},evolutionLog:[],relationalModels:{}
+  };
+  state.agents.push(agent);save();
+  ['new-agent-name','new-agent-opt','new-agent-style','new-agent-voice','new-agent-backstory','new-agent-shadow','new-agent-traits'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  toast(`${name} created!`,'success');showPage('agents');
+}
+
+// ============================================================
+// TOAST & INIT
+// ============================================================
+function toast(msg,type=''){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3000);}
+
+// Initialize app (async)
+(async () => {
+  await load();
+  updateApiKeyStatus();
+  renderAgentGrid();
+})();
+</script>
+</body>
+</html>
