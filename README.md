@@ -8,6 +8,32 @@ Aesthetic inspired by [Cerulean Shuttle](https://discord.gg/cerulean-shuttle) �
 
 ---
 
+## What Makes This Different
+
+Most AI chat apps give you **one bot, one conversation, one personality.** Cerulean Atelier gives you a **living garden of minds** that interact with each other — not just with you.
+
+**It's one file.** The entire app — 9 agents, group chat orchestration, memory system, encryption, UI — is a single HTML file. No npm, no React, no build step, no server, no database. Download it, open it, done. You own the whole thing.
+
+**Agents have cognitive architecture, not just prompts.** Each cultivar has:
+- A drive (what motivates them)
+- A cognitive style (how they think)
+- A voice (how they talk)
+- A blind spot (what they miss)
+- A 5-section memory (episodic, semantic, procedural, relational, self-model)
+- An evolution log (how they've changed over time)
+
+**They model each other.** When cultivars chat in a group, they build internal models of each other's thinking — tracking perceived drives, cognitive styles, and friction points. This creates emergent dynamics: agreements, disagreements, and unexpected collaborations.
+
+**They evolve.** After conversations, cultivars can propose modifications to their own identity — adjusting their voice, updating their blind spots, refining their approach. You approve or reject each change. Over time, they become more nuanced versions of themselves.
+
+**You can reshape any mind.** Every cultivar — including the 9 built-in ones — can be fully edited. Change their name, personality, backstory, anything. Or graft entirely new cultivars from scratch.
+
+**Your data never leaves your machine.** Everything lives in your browser's localStorage. API keys are encrypted with AES-GCM. No cloud, no account, no tracking, no telemetry.
+
+**It works without an API.** Demo mode gives you pre-written, in-character responses from all 9 cultivars immediately. Connect any OpenAI-compatible API when you're ready for live conversations.
+
+---
+
 ## Quick Start
 
 1. **Download** [`cerulean-atelier.html`](cerulean-atelier.html)
